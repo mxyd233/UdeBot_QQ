@@ -1,4 +1,8 @@
 ﻿using Autofac;
+using Newbe.Mahua;
+using Newbe.Mahua.MahuaEvents;
+using System.Threading;
+using UdeBot.MahuaEvents;
 
 namespace UdeBot
 {
@@ -33,6 +37,12 @@ namespace UdeBot
                 //注册在“设置中心”中注册菜单，若想订阅菜单点击事件，可以查看教程。http://www.newbe.pro/docs/mahua/2017/12/24/Newbe-Mahua-Navigations.html
                 builder.RegisterType<MyMenuProvider>()
                     .As<IMahuaMenuProvider>();
+                new System.Threading.Thread(() =>
+                {
+                    Thread.Sleep(1000);
+                    MahuaApis.Api.api = MahuaRobotManager.Instance.CreateSession().MahuaApi;
+                    Conf.Load();
+                }).Start();
             }
         }
 
@@ -45,6 +55,10 @@ namespace UdeBot
             {
                 base.Load(builder);
                 // 将需要监听的事件注册，若缺少此注册，则不会调用相关的实现类
+                builder.RegisterType<PluginEnabledEvt>().As<IPluginEnabledMahuaEvent>();
+                builder.RegisterType<GroupMsgReceivedEvt>().As<IGroupMessageReceivedMahuaEvent>();
+                builder.RegisterType<PluginDisabledEvt>().As<IPluginDisabledMahuaEvent>();
+                builder.RegisterType<PlatfromExitedEvt>().As<IPlatfromExitedMahuaEvent>();
             }
         }
     }

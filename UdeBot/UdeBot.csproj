@@ -18,10 +18,11 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\..\..\..\MPQ\YUELUO\UdeBot\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -41,11 +42,11 @@
     <Reference Include="MessagePack, Version=1.7.3.4, Culture=neutral, PublicKeyToken=b4a0369545f0a1be, processorArchitecture=MSIL">
       <HintPath>..\packages\MessagePack.1.7.3.4\lib\net45\MessagePack.dll</HintPath>
     </Reference>
-    <Reference Include="Newbe.Mahua, Version=1.12.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newbe.Mahua.1.12.0\lib\net452\Newbe.Mahua.dll</HintPath>
+    <Reference Include="Newbe.Mahua, Version=1.13.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newbe.Mahua.1.13.0\lib\net452\Newbe.Mahua.dll</HintPath>
     </Reference>
-    <Reference Include="Newbe.Mahua.PluginLoader, Version=1.12.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newbe.Mahua.PluginLoader.1.12.0\lib\net452\Newbe.Mahua.PluginLoader.dll</HintPath>
+    <Reference Include="Newbe.Mahua.PluginLoader, Version=1.13.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newbe.Mahua.PluginLoader.1.13.0\lib\net452\Newbe.Mahua.PluginLoader.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -72,6 +73,16 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Conf.cs" />
+    <Compile Include="game\GameManager.cs" />
+    <Compile Include="game\Spy\player.cs" />
+    <Compile Include="game\Spy\WhoIsSpy.cs" />
+    <Compile Include="Helper.cs" />
+    <Compile Include="MahuaApis\Api.cs" />
+    <Compile Include="MahuaEvents\GroupMsgReceivedEvt.cs" />
+    <Compile Include="MahuaEvents\PlatfromExitedEvt.cs" />
+    <Compile Include="MahuaEvents\PluginDisabledEvt.cs" />
+    <Compile Include="MahuaEvents\PluginEnabledEvt.cs" />
     <Compile Include="MahuaModule.cs" />
     <Compile Include="MyMenuProvider.cs" />
     <Compile Include="PluginInfo.cs" />

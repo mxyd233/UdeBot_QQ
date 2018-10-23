@@ -1,4 +1,6 @@
-﻿namespace UdeBot
+﻿using Newbe.Mahua;
+
+namespace UdeBot
 {
     /// <summary>
     /// 本插件的基本信息
@@ -14,12 +16,12 @@
         /// 插件名称
         /// </summary>
 
-        public string Name { get; set; } = "插件名称";
+        public string Name { get; set; } = "远大机器人";
 
         /// <summary>
         /// 作者名称
         /// </summary>
-        public string Author { get; set; } = "Newbe";
+        public string Author { get; set; } = "mxr123";
 
         /// <summary>
         /// 插件Id，用于唯一标识插件产品的Id，至少包含 AAA.BBB.CCC 三个部分
@@ -29,6 +31,6 @@
         /// <summary>
         /// 插件描述
         /// </summary>
-        public string Description { get; set; } = "插件描述";
+        public string Description { get; set; } = "unmm 还不知道写什么好";
     }
 }
