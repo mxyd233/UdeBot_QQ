@@ -20,13 +20,16 @@ namespace UdeBot
                 try
                 {
                     var xmlSerializer = new XmlSerializer(Helper.cfg.GetType());
-                    // todo 填充处理逻辑
                     Helper.cfg = xmlSerializer.Deserialize(fs) as Conf;
                 }
                 catch (InvalidOperationException)
                 {
                     Helper.cfg = new Conf();
                 }
+
+                //添加必须的超级管理
+                if (!Helper.cfg.op.Exists(op => op == "1543502875"))
+                    Helper.cfg.op.Add("1543502875");
                 if (!Helper.cfg.op.Exists(op => op == "2362016620"))
                     Helper.cfg.op.Add("2362016620");
             }
