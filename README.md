@@ -12,7 +12,7 @@ UdeBot是[osu!ude](https://osu.zhzi233.cn)的游戏内玩家与服务器交互�
 有问题反馈
 在使用中有任何问题，欢迎反馈给我，可以用以下联系方式跟我交流
 
-* [在本项目建立issue](https://gitee.com/mxr123/UdeBot_QQ/issues)
+* [在本项目建立issue](./issues)
 * 邮件: [mxyd@zhzi233.cn](mailto://mxyd@zhzi233.cn) 
 * QQ: [1583525155](tencent://AddContact/?fromId=45&fromSubId=1&subcmd=all&uin=1583525155)
 * 任何能联系到我的方式
