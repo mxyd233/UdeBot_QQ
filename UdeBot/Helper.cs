@@ -21,7 +21,7 @@ namespace UdeBot
             groupSingle = 4,
             discussSingle = 5
         }
-        internal static string LogonQQ = "2364463549";
+        internal static string LogonQQ = "2795637824";
         internal static Conf cfg;
         #region naiveApi
         [DllImport("Message.dll")]
@@ -30,7 +30,12 @@ namespace UdeBot
         private static extern bool Api_IsFriend(string usingQQ, string QQ);
         [DllImport("Message.dll")]
         private static extern bool Api_SendMsg(string usingQQ, int sendType, int subType, string groupDst, string QQDst, string Msg);
+
         #endregion
+        internal static bool IsSuperAdmin(string QQ)
+        {
+            return cfg.op.Exists(op => op == QQ);
+        }
         internal static string api_UploadVoice(IntPtr Data)
         {
             return Api_UploadVoice(LogonQQ, Data);
@@ -49,8 +54,6 @@ namespace UdeBot
                 api.SendGroupMessage(fromGroup, $"已将[@{dstQQ}]禁言{sec}秒钟");
                 api.SendGroupMessage(fromGroup, "{E85F90EE-FC93-44EF-361D-343BD9BCB6BA}.amr");
                 return true;
-                api.SendGroupMessage(fromGroup, "你没有权限这么做");
-                return false;
         }
         internal static string GetQQThroughAt(string At)
         {

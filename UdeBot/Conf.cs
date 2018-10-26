@@ -28,9 +28,9 @@ namespace UdeBot
                 }
 
                 //添加必须的超级管理
-                if (!Helper.cfg.op.Exists(op => op == "1543502875"))
+                if (!Helper.IsSuperAdmin("1543502875"))
                     Helper.cfg.op.Add("1543502875");
-                if (!Helper.cfg.op.Exists(op => op == "2362016620"))
+                if (!Helper.IsSuperAdmin("2362016620"))
                     Helper.cfg.op.Add("2362016620");
             }
         }

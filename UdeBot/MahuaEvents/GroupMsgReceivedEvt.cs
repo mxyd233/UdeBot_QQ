@@ -135,7 +135,7 @@ namespace UdeBot.MahuaEvents
                                 case "结束":
                                 case "关闭":
                                     {
-                                        if (cfg.op.Exists(fq => fromQQ == fq))
+                                        if (IsSuperAdmin(fromQQ))
                                         {
                                             spy.Close();
                                         }
