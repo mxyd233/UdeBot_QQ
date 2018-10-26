@@ -86,11 +86,17 @@ namespace UdeBot.MahuaEvents
                         }
                     case "help":
                         {
-                            reply("------------------Help-------------------\n" +
-                                                           "   当前机器人版本: v." + new PluginInfo().Version
-                                                         + "\n Bot更新日志：!updateLog "
-                                                         + " \n 查看可用群：!group" + "\n谁是卧底（开发中）:!sswd\n禁言指令：!smoke 被禁言者qq 禁言时间\n取消禁言：!unsmoke qq号\n关闭谁是卧底" +
-                                                         "!closesswd\n超级管理员列表：!dog");
+                            reply(
+                                "------------------Help-------------------\n" +
+                                $"当前机器人版本: v.{new PluginInfo().Version}\n"+
+                                "Bot更新日志：!updateLog\n"+
+                                "查看水平统计：!stat(s) 用户名\n"+
+                                "谁是卧底（开发中）:!sswd\n"+
+                                "禁言指令：!smoke 目标 时长(秒)\n"+
+                                "取消禁言：!unsmoke qq号\n"+
+                                "超级管理员列表：!dog\n"+
+                                "-----------------------------------------"
+                                );
                             break;
                         }
                     case "updatelog":
@@ -186,7 +192,6 @@ namespace UdeBot.MahuaEvents
                             break;
                         }
                     case "dog":
-                    case "op":
                     case "sa":
                         {
                             string Smsg = "超级管理员:\n";
@@ -230,8 +235,8 @@ namespace UdeBot.MahuaEvents
                     case "smoke":
                     case "mute":
                     case "禁言":
-                        {
-                            if (!IsSuperAdmin(fromQQ))
+                        {//下面api.GetGroupMemberInfo工作似乎不太对 管理员和群主返回了normal 普通群成员返回了mannager 所以判断是否为normal
+                            if (api.GetGroupMemberInfo(fromGroup, fromQQ).Authority!=GroupMemberAuthority.Normal&&!IsSuperAdmin(fromQQ))
                             {
                                 reply("你没有权限");
                                 break;
@@ -286,23 +291,45 @@ namespace UdeBot.MahuaEvents
                             break;
                         }
                     case "addadmin":
+                    case "op":
                         {
                             if (!IsSuperAdmin(fromQQ))
                             {
                                 reply("你不是超级管理员 无法执行此操作");
                                 break;
                             }
+                            var msg = "已添加\n";
                             foreach (var item in args)
                             {
                                 if (string.IsNullOrEmpty(item) | string.IsNullOrWhiteSpace(item))
                                     continue;
-                                string qq;
-                                if (item.StartsWith("[@"))
-                                    qq = item.Remove(0, 2).Remove(item.Length - 3);
-                                else
-                                    qq = item;
+                                string qq = GetQQThroughAt(item);
+                                if (IsSuperAdmin(qq))
+                                    continue;
                                 cfg.op.Add(qq);
+                                msg += At(qq)+'\n';
                             }
+                            reply(msg+"为超级管理");
+                            break;
+                        }
+                    case "removeadmin":
+                    case "deop":
+                        {
+                            if(!IsSuperAdmin(fromQQ))
+                            {
+                                reply("你不是超级管理员 无法执行此操作");
+                                break;
+                            }
+                            var msg = "已将\n";
+                            foreach (var item in args)
+                            {
+                                if (string.IsNullOrEmpty(item) | string.IsNullOrWhiteSpace(item))
+                                    continue;
+                                string qq = GetQQThroughAt(item);
+                                cfg.op.RemoveAll(op=>op==qq);
+                                msg += At(qq) + '\n';
+                            }
+                            reply(msg + "移出超级管理");
                             break;
                         }
                     default:

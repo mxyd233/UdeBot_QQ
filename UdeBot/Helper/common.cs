@@ -57,11 +57,12 @@ namespace UdeBot.Helper
         }
         internal static string GetQQThroughAt(string At)
         {
-            if (At.Contains("[@"))
+            if (At.StartsWith("[@"))
                 return At.Remove(0, 2).Remove(At.Length - 3);
             else
                 return At;
         }
+        internal static string At(string QQ) { return $"[@{QQ}]"; }
         internal static bool ConvertToPcm(ref string filename)
         {
             using (var process = new Process())
