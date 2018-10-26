@@ -194,7 +194,7 @@ namespace UdeBot.MahuaEvents
                     case "mute":
                     case "禁言":
                         {
-                            if (!Helper.cfg.op.Contains(fromQQ))
+                            if (!IsSuperAdmin(fromQQ))
                             {
                                 reply("你没有权限");
                                 break;
@@ -236,7 +236,7 @@ namespace UdeBot.MahuaEvents
                     case "铃铛smoke":
                     case @"\uf09f9494smoke":
                         {
-                            if (!cfg.op.Contains(fromQQ))
+                            if (!IsSuperAdmin(fromQQ))
                             {
                                 api.SendGroupMessage("你不是超级管理员 无法执行此操作");
                                 break;
@@ -250,7 +250,7 @@ namespace UdeBot.MahuaEvents
                         }
                     case "addadmin":
                         {
-                            if (!cfg.op.Contains(fromQQ))
+                            if (!IsSuperAdmin(fromQQ))
                             {
                                 reply("你不是超级管理员 无法执行此操作");
                                 break;

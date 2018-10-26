@@ -34,7 +34,7 @@ namespace UdeBot
         #endregion
         internal static bool IsSuperAdmin(string QQ)
         {
-            return cfg.op.Exists(op => op == QQ);
+            return cfg.op.Contains(QQ);
         }
         internal static string api_UploadVoice(IntPtr Data)
         {
