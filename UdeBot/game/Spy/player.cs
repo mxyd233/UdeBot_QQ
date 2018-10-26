@@ -6,6 +6,7 @@ using System.Text;
 using Newbe.Mahua.Apis;
 using Newbe.Mahua.MahuaEvents;
 using static UdeBot.MahuaApis.Api;
+using static UdeBot.Helper.Common;
 
 namespace UdeBot.game.Spy
 {
@@ -37,7 +38,7 @@ namespace UdeBot.game.Spy
         }
         internal void SendMsg(string msg)
         {
-            Helper.Api_sendMsg(Helper.SendType.groupSingle, FromGroup, qq, msg);
+            Api_sendMsg(SendType.groupSingle, FromGroup, qq, msg);
             //api.SendPrivateMessage(qq.ToString(), msg);
         }
         internal void SetPlayerSpy()

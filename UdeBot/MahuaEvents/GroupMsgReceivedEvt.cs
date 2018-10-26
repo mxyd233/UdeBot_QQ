@@ -1,14 +1,13 @@
 ﻿using Newbe.Mahua;
 using Newbe.Mahua.MahuaEvents;
-using Newbe.Mahua.Apis;
 using System;
 using System.Collections.Generic;
-using UdeBot.game.Spy;
-using static UdeBot.MahuaApis.Api;
-using System.Runtime.InteropServices;
 using System.IO;
+using UdeBot.game.Spy;
+using UdeBot.Helper;
 using static UdeBot.game.GameManager;
-using static UdeBot.Helper;
+using static UdeBot.Helper.Common;
+using static UdeBot.MahuaApis.Api;
 
 namespace UdeBot.MahuaEvents
 {
@@ -30,14 +29,17 @@ namespace UdeBot.MahuaEvents
             fromGroup = context.FromGroup;
             fromQQ = context.FromQq;
             msg = context.Message;
+
+            //<发烟>
             if (msg.ToLower().Contains(@"\uf09f9aac"))
             {
                 api.BanGroupMember(fromGroup, fromQQ, new TimeSpan(0, 0, new Random().Next(61)));
                 reply("{E85F90EE-FC93-44EF-361D-343BD9BCB6BA}.amr");
-            }
+            }//</发烟>
+
             try
             {
-                msg = msg.Trim();//去除首位空字符
+                msg = msg.Trim();//去除首尾空字符
                 if (!(msg.StartsWith("!") || msg.StartsWith("！")))
                     return;
                 var cmd = msg.Replace("!", "").Replace("！", "").Trim().ToLower().Split(' ')[0];
@@ -47,6 +49,41 @@ namespace UdeBot.MahuaEvents
                 args.RemoveAll(em => string.IsNullOrWhiteSpace(em) || em == "");
                 switch (cmd)
                 {
+                    case "stats":
+                    case "stat":
+                        {
+                            if (string.IsNullOrEmpty(arg))
+                            {
+                                reply("请输入用户名");
+                                break;
+                            }
+                            try
+                            {
+                                int userid = -1;
+                                userid = Convert.ToInt32(Database.RunQueryOne($"SELECT user_id from phpbb_users where username='{arg}'"));//如果没有获得userid将会返回0
+                                if (userid == 0) { reply("用户名不存在"); break; }
+                                var username = arg;
+                                var r = Database.RunQuery("select rank_score,accuracy_new,rank_score_index,level,playcount from osu_user_stats where user_id=" + userid);
+                                r.Read();
+                                var pp = r.GetFloat("rank_score");
+                                var acc = Math.Round(r.GetFloat("accuracy_new"), 2);
+                                var rank = r.GetInt32("rank_score_index");
+                                var playcount = r.GetInt32("playcount");
+                                var level = Math.Round(r.GetFloat("level"), 2);
+                                var msg = $"{username}(#{rank})大佬的水平统计为:\n" +
+                                        $"pp:{pp}\n" +
+                                        $"acc:{acc}\n" +
+                                        $"pc:{playcount}\n" +
+                                        $"level:{level}";
+                                reply(msg);
+                            }
+                            catch
+                            {
+                                reply("出现未知错误，已转发错误信息给mxr123\n请等待修复");
+                                throw;//在这里throw后会被switch块外的catch捕获并发送给2362016620
+                            }
+                            break;
+                        }
                     case "help":
                         {
                             reply("------------------Help-------------------\n" +
@@ -58,7 +95,7 @@ namespace UdeBot.MahuaEvents
                         }
                     case "updatelog":
                         {
-                            reply("MiaoBot UpdataLog\n v0.0.0.1 群消息接受正常\nv0.0.0.2 游戏 谁是卧底开发ING\n V0.0.0.3 谁是卧底大部分开发完成");
+                            reply("https://gitee.com/mxr123/UdeBot_QQ/commits/master");
                             break;
                         }
                     case "sswd":
@@ -120,7 +157,7 @@ namespace UdeBot.MahuaEvents
                                     {
                                         if (args.Count >= 2)
                                         {
-                                            if(args[1].Contains("@")&&!args[1].Contains("["))
+                                            if (args[1].Contains("@") && !args[1].Contains("["))
                                             {
                                                 reply("目标有误");
                                                 break;

@@ -1,45 +1,58 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
-using UdeBot;
+using UdeBot.Helper;
+using static UdeBot.Helper.Common;
 
 namespace UdeBot
 {
     public class Conf
     {
         public List<string> op = new List<string>();
+        public string dbConnectionString="Server=127.0.0.1;Database=osu;User=root;Password=passwd;";
+        
         internal static void Load()
         {
-            using (FileStream fs = new FileStream($"{new PluginInfo().Id}/conf.xml", FileMode.OpenOrCreate))
+            using (FileStream fs = new FileStream("conf.xml", FileMode.OpenOrCreate))
             {
-                Helper.cfg = new Conf();
+                cfg = new Conf();
                 try
                 {
-                    var xmlSerializer = new XmlSerializer(Helper.cfg.GetType());
-                    Helper.cfg = xmlSerializer.Deserialize(fs) as Conf;
+                    var xmlSerializer = new XmlSerializer(cfg.GetType());
+                    cfg = xmlSerializer.Deserialize(fs) as Conf;
                 }
                 catch (InvalidOperationException)
                 {
-                    Helper.cfg = new Conf();
+                    Save(true);
+                    cfg = new Conf();
+
                 }
 
                 //添加必须的超级管理
-                if (!Helper.IsSuperAdmin("1543502875"))
-                    Helper.cfg.op.Add("1543502875");
-                if (!Helper.IsSuperAdmin("2362016620"))
-                    Helper.cfg.op.Add("2362016620");
+                if (!IsSuperAdmin("1543502875"))
+                    cfg.op.Add("1543502875");
+                if (!IsSuperAdmin("2362016620"))
+                    cfg.op.Add("2362016620");
             }
         }
-        internal static void Save()
+        internal static void Save(bool saveToBak = false)
         {
-            using (FileStream fs = new FileStream($"{new PluginInfo().Id}/conf.xml", FileMode.OpenOrCreate))
+            if (saveToBak)
             {
-                var xmlSerializer = new XmlSerializer(Helper.cfg.GetType());
-                xmlSerializer.Serialize(fs, Helper.cfg);
+                var bakName = "conf.xml.bak.{DateTime.Now.Ticks}";
+                if (File.Exists("conf.xml"))
+                    File.Copy("conf.xml", bakName);
+                for (int i = 0; i < 4; i++)//重要的事情说三遍
+                {
+                    Log("配置文件损坏 请重新配置 原配置文件为" + bakName);
+                }
+                return;
+            }
+            using (FileStream fs = new FileStream("conf.xml", FileMode.OpenOrCreate))
+            {
+                var xmlSerializer = new XmlSerializer(cfg.GetType());
+                xmlSerializer.Serialize(fs, cfg);
             }
         }
     }

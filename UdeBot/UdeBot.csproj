@@ -32,6 +32,16 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'build|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Autofac, Version=4.8.1.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\packages\Autofac.4.8.1\lib\net45\Autofac.dll</HintPath>
@@ -90,7 +100,8 @@
     <Compile Include="game\GameManager.cs" />
     <Compile Include="game\Spy\player.cs" />
     <Compile Include="game\Spy\WhoIsSpy.cs" />
-    <Compile Include="Helper.cs" />
+    <Compile Include="Helper\Common.cs" />
+    <Compile Include="Helper\Database.cs" />
     <Compile Include="MahuaApis\Api.cs" />
     <Compile Include="MahuaEvents\GroupMsgReceivedEvt.cs" />
     <Compile Include="MahuaEvents\PlatfromExitedEvt.cs" />

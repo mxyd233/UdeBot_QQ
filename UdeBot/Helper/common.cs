@@ -1,17 +1,11 @@
-﻿using Newbe.Mahua;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using static UdeBot.MahuaApis.Api;
 
-namespace UdeBot
+namespace UdeBot.Helper
 {
-    static class Helper
+    internal static class Common
     {
         internal enum SendType
         {
@@ -30,6 +24,8 @@ namespace UdeBot
         private static extern bool Api_IsFriend(string usingQQ, string QQ);
         [DllImport("Message.dll")]
         private static extern bool Api_SendMsg(string usingQQ, int sendType, int subType, string groupDst, string QQDst, string Msg);
+        [DllImport("Message.dll")]
+        private static extern int Api_OutPut(string msg);
 
         #endregion
         internal static bool IsSuperAdmin(string QQ)
@@ -48,12 +44,16 @@ namespace UdeBot
         {
             return Api_SendMsg(LogonQQ, (int)sendType, subType, groupDst, QQDst, Msg);
         }
-        internal static bool Api_mute(string fromGroup, string dstQQ,int sec)
+        internal static bool Api_mute(string fromGroup, string dstQQ, int sec)
         {
-                api.BanGroupMember(fromGroup, dstQQ, new TimeSpan(0, 0, Convert.ToInt32(sec)));
-                api.SendGroupMessage(fromGroup, $"已将[@{dstQQ}]禁言{sec}秒钟");
-                api.SendGroupMessage(fromGroup, "{E85F90EE-FC93-44EF-361D-343BD9BCB6BA}.amr");
-                return true;
+            api.BanGroupMember(fromGroup, dstQQ, new TimeSpan(0, 0, Convert.ToInt32(sec)));
+            api.SendGroupMessage(fromGroup, $"已将[@{dstQQ}]禁言{sec}秒钟");
+            api.SendGroupMessage(fromGroup, "{E85F90EE-FC93-44EF-361D-343BD9BCB6BA}.amr");
+            return true;
+        }
+        internal static int Log(string msg)
+        {
+            return Api_OutPut(msg);
         }
         internal static string GetQQThroughAt(string At)
         {

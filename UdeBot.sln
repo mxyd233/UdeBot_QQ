@@ -7,10 +7,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UdeBot", "UdeBot\UdeBot.csp
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		build|Any CPU = build|Any CPU
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F0F6EC5F-86DB-4CB1-88CB-ABE9E5FD6595}.build|Any CPU.ActiveCfg = build|Any CPU
+		{F0F6EC5F-86DB-4CB1-88CB-ABE9E5FD6595}.build|Any CPU.Build.0 = build|Any CPU
 		{F0F6EC5F-86DB-4CB1-88CB-ABE9E5FD6595}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F0F6EC5F-86DB-4CB1-88CB-ABE9E5FD6595}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F0F6EC5F-86DB-4CB1-88CB-ABE9E5FD6595}.Release|Any CPU.ActiveCfg = Release|Any CPU

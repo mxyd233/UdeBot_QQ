@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using Newbe.Mahua;
 using static UdeBot.MahuaApis.Api;
+using static UdeBot.Helper.Common;
 
 namespace UdeBot.game.Spy
 {
@@ -114,12 +115,12 @@ namespace UdeBot.game.Spy
             if (player.Dead)
             {
                 SendMsg("死人不能说话");
-                Helper.Api_mute(QqGroup, fromQQ, 60);
+                Api_mute(QqGroup, fromQQ, 60);
             }
             if (playerDescribing != player)
             {
                 SendMsg("cnm别插嘴");
-                Helper.Api_mute(QqGroup, fromQQ, 30);
+                Api_mute(QqGroup, fromQQ, 30);
                 return false;
             }
             player.Described = true;
