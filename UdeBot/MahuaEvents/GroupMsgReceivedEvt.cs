@@ -334,7 +334,7 @@ namespace UdeBot.MahuaEvents
                         }
                     default:
                         {
-                            reply("Miao Bot 未知指令");
+                            reply("UdeBot 未知指令");
                             goto case "help";
                         }
                 }
