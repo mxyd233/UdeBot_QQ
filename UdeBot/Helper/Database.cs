@@ -45,7 +45,7 @@ namespace UdeBot.Helper
             }
         }
 
-        internal static int RunNonQuery(string sqlString, params MySqlParameter[] parameters)
+        internal static int Exec(string sqlString, params MySqlParameter[] parameters)
         {
 
             using (MySqlConnection m = GetConnection())

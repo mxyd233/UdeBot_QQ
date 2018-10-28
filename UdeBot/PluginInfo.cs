@@ -16,7 +16,7 @@ namespace UdeBot
         /// 插件名称
         /// </summary>
 
-        public string Name { get; set; } = "远大机器人";
+        public string Name { get; set; } = "UdeBot";
 
         /// <summary>
         /// 作者名称

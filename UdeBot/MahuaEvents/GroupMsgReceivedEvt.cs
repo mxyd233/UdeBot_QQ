@@ -59,7 +59,7 @@ namespace UdeBot.MahuaEvents
                             }
                             try
                             {
-                                int userid = -1;
+                                var userid = -1;
                                 userid = Convert.ToInt32(Database.RunQueryOne($"SELECT user_id from phpbb_users where username='{arg}'"));//如果没有获得userid将会返回0
                                 if (userid == 0) { reply("用户名不存在"); break; }
                                 var username = arg;
@@ -84,17 +84,37 @@ namespace UdeBot.MahuaEvents
                             }
                             break;
                         }
+                    case "bind":
+                    case "绑定":
+                        {
+                            if(string.IsNullOrEmpty(arg))
+                            {
+                                reply("请输入大佬在ude中的游戏id");
+                                break;
+                            }
+                            var userid = -1;
+                            userid = Convert.ToInt32(Database.RunQueryOne($"SELECT user_id from phpbb_users where username='{arg}'"));//如果没有获得userid将会返回0
+                            if (userid==0)
+                            {
+                                reply("未ude找到此游戏id，请检查输入\n还没有注册的话\n可以在 https://osu.zhzi233.cn/p/register 注册\n(ude同样禁止小号)");
+                                break;
+                            }
+                            Database.Exec($"update phpbb_users set QQ='{fromQQ}' where user_id={userid}");
+                            reply("绑定成功");
+
+                            break;
+                        }
                     case "help":
                         {
                             reply(
                                 "------------------Help-------------------\n" +
-                                $"当前机器人版本: v.{new PluginInfo().Version}\n"+
-                                "Bot更新日志：!updateLog\n"+
-                                "查看水平统计：!stat(s) 用户名\n"+
-                                "谁是卧底（开发中）:!sswd\n"+
-                                "禁言指令：!smoke 目标 时长(秒)\n"+
-                                "取消禁言：!unsmoke qq号\n"+
-                                "超级管理员列表：!dog\n"+
+                                $"当前机器人版本: v.{new PluginInfo().Version}\n" +
+                                "Bot更新日志：!updateLog\n" +
+                                "查看水平统计：!stat(s) 用户名\n" +
+                                "谁是卧底（开发中）:!sswd\n" +
+                                "禁言指令：!smoke 目标 时长(秒)\n" +
+                                "取消禁言：!unsmoke qq号\n" +
+                                "超级管理员列表：!dog\n" +
                                 "-----------------------------------------"
                                 );
                             break;
@@ -236,12 +256,13 @@ namespace UdeBot.MahuaEvents
                     case "mute":
                     case "禁言":
                         {//下面api.GetGroupMemberInfo工作似乎不太对 管理员和群主返回了normal 普通群成员返回了mannager 所以判断是否为normal
-                            if (api.GetGroupMemberInfo(fromGroup, fromQQ).Authority!=GroupMemberAuthority.Normal&&!IsSuperAdmin(fromQQ))
+                            if (api.GetGroupMemberInfo(fromGroup, fromQQ).Authority != GroupMemberAuthority.Normal && !IsSuperAdmin(fromQQ))
                             {
-                                reply("你没有权限");
+                                reply("权限不足");
                                 break;
                             }
                             fromQQ = GetQQThroughAt(fromQQ);
+                            //判断是否仅是@名字 ([@xxx]这种真正的@才能获取到qq号码）
                             if (fromQQ.Contains("@") && !fromQQ.Contains("["))
                             {
                                 reply("目标有误");
@@ -307,15 +328,15 @@ namespace UdeBot.MahuaEvents
                                 if (IsSuperAdmin(qq))
                                     continue;
                                 cfg.op.Add(qq);
-                                msg += At(qq)+'\n';
+                                msg += At(qq) + '\n';
                             }
-                            reply(msg+"为超级管理");
+                            reply(msg + "为超级管理");
                             break;
                         }
                     case "removeadmin":
                     case "deop":
                         {
-                            if(!IsSuperAdmin(fromQQ))
+                            if (!IsSuperAdmin(fromQQ))
                             {
                                 reply("你不是超级管理员 无法执行此操作");
                                 break;
@@ -326,7 +347,7 @@ namespace UdeBot.MahuaEvents
                                 if (string.IsNullOrEmpty(item) | string.IsNullOrWhiteSpace(item))
                                     continue;
                                 string qq = GetQQThroughAt(item);
-                                cfg.op.RemoveAll(op=>op==qq);
+                                cfg.op.RemoveAll(op => op == qq);
                                 msg += At(qq) + '\n';
                             }
                             reply(msg + "移出超级管理");
