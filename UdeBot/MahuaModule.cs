@@ -59,6 +59,7 @@ namespace UdeBot
                 builder.RegisterType<GroupMsgReceivedEvt>().As<IGroupMessageReceivedMahuaEvent>();
                 builder.RegisterType<PluginDisabledEvt>().As<IPluginDisabledMahuaEvent>();
                 builder.RegisterType<PlatfromExitedEvt>().As<IPlatfromExitedMahuaEvent>();
+                builder.RegisterType<PrivateMsgReceivedEvt>().As<IPrivateMessageReceivedMahuaEvent>();
             }
         }
     }

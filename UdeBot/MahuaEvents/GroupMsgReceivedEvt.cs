@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using UdeBot.game.Spy;
 using UdeBot.Helper;
+using UdeBot.Processer;
 using static UdeBot.game.GameManager;
 using static UdeBot.Helper.Common;
 using static UdeBot.MahuaApis.Api;
@@ -59,49 +60,69 @@ namespace UdeBot.MahuaEvents
                             }
                             try
                             {
-                                var userid = -1;
-                                userid = Convert.ToInt32(Database.RunQueryOne($"SELECT user_id from phpbb_users where username='{arg}'"));//如果没有获得userid将会返回0
-                                if (userid == 0) { reply("用户名不存在"); break; }
-                                var username = arg;
-                                var r = Database.RunQuery("select rank_score,accuracy_new,rank_score_index,level,playcount from osu_user_stats where user_id=" + userid);
-                                r.Read();
-                                var pp = r.GetFloat("rank_score");
-                                var acc = Math.Round(r.GetFloat("accuracy_new"), 2);
-                                var rank = r.GetInt32("rank_score_index");
-                                var playcount = r.GetInt32("playcount");
-                                var level = Math.Round(r.GetFloat("level"), 2);
-                                var msg = $"{username}(#{rank})大佬的水平统计为:\n" +
-                                        $"pp:{pp}\n" +
-                                        $"acc:{acc}\n" +
-                                        $"pc:{playcount}\n" +
-                                        $"level:{level}";
-                                reply(msg);
+                                var userid = Convert.ToInt32(Database.RunQueryOne($"SELECT user_id from phpbb_users where username='{arg}'"));//如果没有获得userid将会返回0
+                                using (var r = Database.RunQuery("select rank_score,accuracy_new,rank_score_index,level,playcount from osu_user_stats where user_id=" + userid))
+                                {
+                                    if (r.Read())
+                                    {
+                                        var pp = r.GetFloat("rank_score");
+                                        var acc = Math.Round(r.GetFloat("accuracy_new"), 2);
+                                        var rank = r.GetInt32("rank_score_index");
+                                        var playcount = r.GetInt32("playcount");
+                                        var level = Math.Round(r.GetFloat("level"), 2);
+                                        var msg = $"{arg}(#{rank})大佬的水平统计为:\n" +
+                                                $"pp:{pp}\n" +
+                                                $"acc:{acc}\n" +
+                                                $"pc:{playcount}\n" +
+                                                $"level:{level}";
+                                        reply(msg);
+                                        break;
+                                    }
+                                }
+                                reply("用户名不存在");
+                                break;
                             }
                             catch
                             {
                                 reply("出现未知错误，已转发错误信息给mxr123\n请等待修复");
-                                throw;//在这里throw后会被switch块外的catch捕获并发送给2362016620
+                                throw;//在这里throw后会被switch块外的catch捕获并发送给cfg.lotToQQ
                             }
-                            break;
                         }
                     case "bind":
                     case "绑定":
                         {
-                            if(string.IsNullOrEmpty(arg))
+                            if(Verify.VerifyDictionary.ContainsKey(fromQQ))
+                            {
+                                reply("你仍在一个验证流程中，请将ude绑定邮箱中的验证码通过私聊 !验证 233333 的方式发送给我");
+                                break;
+                            }
+                            if (string.IsNullOrEmpty(arg))
                             {
                                 reply("请输入大佬在ude中的游戏id");
                                 break;
                             }
-                            var userid = -1;
-                            userid = Convert.ToInt32(Database.RunQueryOne($"SELECT user_id from phpbb_users where username='{arg}'"));//如果没有获得userid将会返回0
-                            if (userid==0)
+                            if (Convert.ToBoolean(Database.RunQueryOne($"SELECT user_id is not null FROM phpbb_users WHERE QQ ='{fromQQ}'")))
                             {
-                                reply("未ude找到此游戏id，请检查输入\n还没有注册的话\n可以在 https://osu.zhzi233.cn/p/register 注册\n(ude同样禁止小号)");
+                                reply("你已经绑定过惹");
                                 break;
                             }
-                            Database.Exec($"update phpbb_users set QQ='{fromQQ}' where user_id={userid}");
-                            reply("绑定成功");
-
+                            using (var r = Database.RunQuery($"SELECT user_id,(QQ is null) as havQQ FROM phpbb_users WHERE username='{arg}'"))//如果没有获得userid将会返回0
+                            {
+                                if (r.Read())
+                                {
+                                    var userid = r.GetInt32("user_id");
+                                    var Binded = !r.GetBoolean("havQQ");
+                                    if (Binded)
+                                    {
+                                        reply("此id已经绑定过QQ了");
+                                        break;
+                                    }
+                                    Verify.VerifyDictionary.Add(fromQQ, new Verify(userid, fromQQ, Verify.VerifyFor.bind));
+                                    reply("请将ude绑定邮箱中的验证码通过私聊 !验证 233333 的方式发送给我");
+                                    break;
+                                }
+                            }
+                            reply("未ude找到此游戏id，请检查输入\n还没有注册的话\n可以在 https://osu.zhzi233.cn/p/register 注册\n(ude同样禁止小号)");
                             break;
                         }
                     case "help":
@@ -227,7 +248,9 @@ namespace UdeBot.MahuaEvents
                         {
                             try
                             {
-                                reply(arg);
+                                //new Verify(5);
+                                //reply(new Verify().verificationCode);
+                                //reply(arg);
                                 //var filename = arg;
                                 //if (Helper.ConvertToPcm(ref filename))
                                 //    reply("成功,文件名为" + filename);
@@ -366,7 +389,7 @@ namespace UdeBot.MahuaEvents
             }
             catch (Exception e)
             {
-                api.SendPrivateMessage("2362016620", e.Message + "\n\n\n" + e.Source);
+                api.SendPrivateMessage(cfg.logToQQ, e.Message + "\n\n\n" + e.Source);
             }
         }
         private void reply(string Msg)

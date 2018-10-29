@@ -10,7 +10,12 @@ namespace UdeBot
     public class Conf
     {
         public List<string> op = new List<string>();
+        public string logToQQ = "2362016620";
         public string dbConnectionString="Server=127.0.0.1;Database=osu;User=root;Password=passwd;";
+        public string mailFrom = "";
+        public string mailPasswd = "";
+        public string smtpHost = "";
+        public bool stmpSsl = false;
         
         internal static void Load()
         {

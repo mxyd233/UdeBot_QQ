@@ -107,9 +107,11 @@
     <Compile Include="MahuaEvents\PlatfromExitedEvt.cs" />
     <Compile Include="MahuaEvents\PluginDisabledEvt.cs" />
     <Compile Include="MahuaEvents\PluginEnabledEvt.cs" />
+    <Compile Include="MahuaEvents\PrivateMsgReceivedEvt.cs" />
     <Compile Include="MahuaModule.cs" />
     <Compile Include="MyMenuProvider.cs" />
     <Compile Include="PluginInfo.cs" />
+    <Compile Include="Processer\Verify.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
