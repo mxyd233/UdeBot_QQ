@@ -78,34 +78,19 @@ namespace UdeBot.Processer
         private void genCode()
         {
             Random random = new Random();
+            Func<int, int> determiner = n => n == 0 ? random.Next(0x30, 0x3a) : (n == 1 ? random.Next(0x41, 0x5b) : random.Next(0x61, 0x7b));
+            //Console.Write();
+            //Random random = new Random();
             var code = "";
             for (int i = 0; i < 9; i++)
             {
                 //int determiner(int n) => 
-                code += (char)determiner(random);
+                code += (char)determiner(random.Next(3));
             }
 
             verificationCode = code;
         }
-        private int determiner(Random random)
-        {
-            var n = random.Next(3);
-            var i = 0;
-            switch (n)
-            {
-                case 0:
-                    i = random.Next(0x30, 0x3a);
-                    break;
-                case 1:
-                    i = random.Next(0x41, 0x5b);
-                    break;
-                default:
-                    i = random.Next(0x61, 0x7b);
-                    break;
-            }
 
-            return i;
-        }
         internal bool VerifyCode(string code)
         {
             var success = verificationCode == code;

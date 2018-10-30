@@ -12,9 +12,9 @@ namespace UdeBot.game.Spy
 {
     class player : IComparable<player>
     {
-#if DEBUG
+//#if DEBUG
         internal
-#endif
+//#endif
         string qq;
         string FromGroup;
         internal bool Described;

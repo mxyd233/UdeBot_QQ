@@ -248,7 +248,6 @@ namespace UdeBot.MahuaEvents
                         {
                             try
                             {
-                                //new Verify(5);
                                 //reply(new Verify().verificationCode);
                                 //reply(arg);
                                 //var filename = arg;
