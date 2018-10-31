@@ -16,6 +16,7 @@ namespace UdeBot
         public string mailPasswd = "";
         public string smtpHost = "";
         public bool stmpSsl = false;
+        public byte reperterTrigger = 2;
         
         internal static void Load()
         {

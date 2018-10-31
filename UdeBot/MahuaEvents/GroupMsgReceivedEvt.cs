@@ -30,7 +30,7 @@ namespace UdeBot.MahuaEvents
             fromGroup = context.FromGroup;
             fromQQ = context.FromQq;
             msg = context.Message;
-
+            Processer.Repeat.Add(fromGroup, msg);
             //<发烟>
             if (msg.ToLower().Contains(@"\uf09f9aac"))
             {
