@@ -113,6 +113,7 @@
     <Compile Include="MyMenuProvider.cs" />
     <Compile Include="PluginInfo.cs" />
     <Compile Include="Processer\Repeat.cs" />
+    <Compile Include="Processer\Ude.cs" />
     <Compile Include="Processer\Verify.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

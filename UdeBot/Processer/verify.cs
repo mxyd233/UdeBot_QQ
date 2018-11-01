@@ -15,7 +15,7 @@ namespace UdeBot.Processer
             bind,
             web
         }
-        internal static Dictionary<string, Verify> VerifyDictionary = new Dictionary<string, Verify>();
+        internal static Dictionary<string, Verify> VerificationDictionary = new Dictionary<string, Verify>();
         readonly string QQ;
         readonly int userid;
         string verificationCode;
@@ -29,7 +29,7 @@ namespace UdeBot.Processer
             this.QQ = QQ;
             this.userid = userid;
             this.verifyFor = verifyFor;
-            genCode();
+            GenCode();
             var username = "";
             var userMail = "";
             using (var r = Database.RunQuery($"select user_email,username from phpbb_users where user_id='{this.userid}'"))
@@ -66,26 +66,26 @@ namespace UdeBot.Processer
                     stmpSev.Send(mail);
             }
             timer = new Timer() { AutoReset = false, Interval = 1000 * 60 * 60 * 30, Enabled = false };
-            timer.Elapsed += timedout;
+            timer.Elapsed += Timedout;
             timer.Start();
         }
 
-        private void timedout(object sender, ElapsedEventArgs e)
+        private void Timedout(object sender, ElapsedEventArgs e)
         {
-            VerifyDictionary.Remove(QQ);
+            VerificationDictionary.Remove(QQ);
         }
 
-        private void genCode()
+        private void GenCode()
         {
             Random random = new Random();
-            Func<int, int> determiner = n => n == 0 ? random.Next(0x30, 0x3a) : (n == 1 ? random.Next(0x41, 0x5b) : random.Next(0x61, 0x7b));
+            int Determiner(int n) => n == 0 ? random.Next(0x30, 0x3a) : (n == 1 ? random.Next(0x41, 0x5b) : random.Next(0x61, 0x7b));
             //Console.Write();
             //Random random = new Random();
             var code = "";
             for (int i = 0; i < 9; i++)
             {
                 //int determiner(int n) => 
-                code += (char)determiner(random.Next(3));
+                code += (char)Determiner(random.Next(3));
             }
 
             verificationCode = code;
@@ -100,7 +100,7 @@ namespace UdeBot.Processer
                 {
                     case VerifyFor.bind:
                         Database.Exec($"update phpbb_users set QQ='{QQ}' where user_id={userid}");
-                        VerifyDictionary.Remove(QQ);
+                        VerificationDictionary.Remove(QQ);
                         break;
                     case VerifyFor.web:
                         break;
@@ -110,7 +110,7 @@ namespace UdeBot.Processer
             }
             else if (++failTimes > 2)
             {
-                VerifyDictionary.Remove(QQ);//↓log多次验证失败
+                VerificationDictionary.Remove(QQ);//↓log多次验证失败
                 MahuaApis.Api.api.SendPrivateMessage(cfg.logToQQ, $"{QQ}尝试在 https://osu.zhzi233.cn/u/{userid} 多次验证失败");
                 throw new Exception("三次验证失败");//抛出异常来返回第三个'bool'
             }

@@ -34,7 +34,7 @@ namespace UdeBot.MahuaEvents
             if (msg.ToLower().Contains(@"\uf09f9aac"))
             {
                 api.BanGroupMember(fromGroup, fromQQ, new TimeSpan(0, 0, new Random().Next(61)));
-                reply("{E85F90EE-FC93-44EF-361D-343BD9BCB6BA}.amr");
+                Reply("{E85F90EE-FC93-44EF-361D-343BD9BCB6BA}.amr");
             }//</发烟>
 
             try
@@ -55,96 +55,24 @@ namespace UdeBot.MahuaEvents
                     case "stats":
                     case "stat":
                         {
-                            if (string.IsNullOrEmpty(arg))
-                            {
-                                reply("请输入用户名");
-                                break;
-                            }
-                            try
-                            {
-                                var userid = Convert.ToInt32(Database.RunQueryOne($"SELECT user_id from phpbb_users where username='{arg}'"));//如果没有获得userid将会返回0
-                                using (var r = Database.RunQuery("select rank_score,accuracy_new,rank_score_index,level,playcount from osu_user_stats where user_id=" + userid))
-                                {
-                                    if (r.Read())
-                                    {
-                                        var pp = r.GetFloat("rank_score");
-                                        var acc = Math.Round(r.GetFloat("accuracy_new"), 2);
-                                        var rank = r.GetInt32("rank_score_index");
-                                        var playcount = r.GetInt32("playcount");
-                                        var level = Math.Round(r.GetFloat("level"), 2);
-                                        var msg = $"{arg}(#{rank})大佬的水平统计为:\n" +
-                                                $"pp:{pp}\n" +
-                                                $"acc:{acc}\n" +
-                                                $"pc:{playcount}\n" +
-                                                $"level:{level}";
-                                        reply(msg);
-                                        break;
-                                    }
-                                }
-                                reply("用户名不存在");
-                                break;
-                            }
-                            catch
-                            {
-                                reply("出现未知错误，已转发错误信息给mxr123\n请等待修复");
-                                throw;//在这里throw后会被switch块外的catch捕获并发送给cfg.lotToQQ
-                            }
+                            Ude.ReplyStats(arg,Reply);
+                            break;
                         }
                     case "bind":
                     case "绑定":
                         {
-                            if (Verify.VerifyDictionary.ContainsKey(fromQQ))
-                            {
-                                reply("你仍在一个验证流程中，请将ude绑定邮箱中的验证码通过私聊 !验证 233333 的方式发送给我");
-                                break;
-                            }
-                            if (string.IsNullOrEmpty(arg))
-                            {
-                                reply("请输入大佬在ude中的游戏id");
-                                break;
-                            }
-                            if (Convert.ToBoolean(Database.RunQueryOne($"SELECT user_id is not null FROM phpbb_users WHERE QQ ='{fromQQ}'")))
-                            {
-                                reply("你已经绑定过惹");
-                                break;
-                            }
-                            using (var r = Database.RunQuery($"SELECT user_id,(QQ is null) as havQQ FROM phpbb_users WHERE username='{arg}'"))//如果没有获得userid将会返回0
-                            {
-                                if (r.Read())
-                                {
-                                    var userid = r.GetInt32("user_id");
-                                    var Binded = !r.GetBoolean("havQQ");
-                                    if (Binded)
-                                    {
-                                        reply("此id已经绑定过QQ了");
-                                        break;
-                                    }
-                                    Verify.VerifyDictionary.Add(fromQQ, new Verify(userid, fromQQ, Verify.VerifyFor.bind));
-                                    reply("请将ude绑定邮箱中的验证码通过私聊 !验证 233333 的方式发送给我");
-                                    break;
-                                }
-                            }
-                            reply("未ude找到此游戏id，请检查输入\n还没有注册的话\n可以在 https://osu.zhzi233.cn/p/register 注册\n(ude同样禁止小号)");
+                            Ude.BindUser(fromQQ, arg,Reply);
+                            break;
+                        }
+                    case "验证":
+                    case "verify":
+                        {
+                            Ude.VerifyUser(fromQQ, arg, Reply);
                             break;
                         }
                     case "help":
                         {
-                            reply(
-                                "------------------Help-------------------\n" +
-                                $"当前机器人版本: v.{new PluginInfo().Version}\n" +
-                                "Bot更新日志：!updateLog\n" +
-                                "查看水平统计：!stat(s) 用户名\n" +
-                                "谁是卧底（开发中）:!sswd\n" +
-                                "禁言指令：!smoke 目标 时长(秒)\n" +
-                                "取消禁言：!unsmoke qq号\n" +
-                                "超级管理员列表：!dog\n" +
-                                "-----------------------------------------"
-                                );
-                            break;
-                        }
-                    case "updatelog":
-                        {
-                            reply("https://gitee.com/mxr123/UdeBot_QQ/commits/master");
+                            Ude.ReplyHelp(Reply);
                             break;
                         }
                     case "sswd":
@@ -152,7 +80,7 @@ namespace UdeBot.MahuaEvents
                         {
                             if (args.Count < 1)
                             {
-                                reply("使用方法：谁是卧底 {开始|加入|解释|投票|结束}");
+                                Reply("使用方法：谁是卧底 {开始|加入|解释|投票|结束}");
                                 break;
                             }
                             WhoIsSpy spy = null;
@@ -160,7 +88,7 @@ namespace UdeBot.MahuaEvents
                                 spy = FindWhoIsSpyByQQGroup(fromGroup);
                             else if (args[0] != "start" && args[0] != "开始")
                             {
-                                reply("此群没有已开启的谁是卧底游戏");
+                                Reply("此群没有已开启的谁是卧底游戏");
                                 break;
                             }
                             switch (args[0])
@@ -170,7 +98,7 @@ namespace UdeBot.MahuaEvents
                                     {
                                         if (WhoIsSpyList.Exists(s => s.QqGroup == fromGroup))
                                         {
-                                            reply("Error本群已经有游戏进行中");
+                                            Reply("Error本群已经有游戏进行中");
                                             break;
                                         }
                                         else
@@ -178,11 +106,11 @@ namespace UdeBot.MahuaEvents
                                             ushort playerCount = 6;
                                             if (!(args.Count < 2) && !ushort.TryParse(args[1], out playerCount))
                                             {
-                                                reply("游戏人数有误");
+                                                Reply("游戏人数有误");
                                                 break;
                                             }
                                             WhoIsSpyList.Add(new WhoIsSpy(fromGroup, playerCount));
-                                            reply("谁是卧底游戏开始 等待加入 0/" + playerCount);
+                                            Reply("谁是卧底游戏开始 等待加入 0/" + playerCount);
                                         }
                                         break;
                                     }
@@ -192,7 +120,7 @@ namespace UdeBot.MahuaEvents
                                         if (WhoIsSpyList.Exists(s => s.QqGroup == fromGroup))
                                             spy.Join(fromQQ);
                                         else
-                                            reply("此群没有已开启的谁是卧底游戏 使用!sswd start来开启一场游戏");
+                                            Reply("此群没有已开启的谁是卧底游戏 使用!sswd start来开启一场游戏");
                                         break;
                                     }
                                 case "explain":
@@ -208,13 +136,13 @@ namespace UdeBot.MahuaEvents
                                         {
                                             if (args[1].Contains("@") && !args[1].Contains("["))
                                             {
-                                                reply("目标有误");
+                                                Reply("目标有误");
                                                 break;
                                             }
                                             spy.Vote(fromQQ, GetQQThroughAt(args[1]));
                                         }
                                         else
-                                            reply($"[@{fromQQ}]请输入投票目标");
+                                            Reply($"[@{fromQQ}]请输入投票目标");
                                         break;
                                     }
                                 case "close":
@@ -227,7 +155,7 @@ namespace UdeBot.MahuaEvents
                                         }
                                         else
                                         {
-                                            reply("你没有权限进行此操作");
+                                            Reply("你没有权限进行此操作");
                                         }
                                         break;
                                     }
@@ -243,36 +171,18 @@ namespace UdeBot.MahuaEvents
                                 Smsg += "[@" + item + ']' + '\n';
                             }
                             Smsg = Smsg.TrimEnd('\n');
-                            reply(Smsg);
+                            Reply(Smsg);
                             break;
                         }
                     case "test":
                         {
                             try
                             {
-                                //reply(new Verify().verificationCode);
-                                //reply(arg);
-                                //var filename = arg;
-                                //if (Helper.ConvertToPcm(ref filename))
-                                //    reply("成功,文件名为" + filename);
-                                //else
-                                //    reply("失败");
-                                //if (Helper.ConvertPcmToSlik(ref filename))
-                                //{
-                                //    reply("成功,文件名为" + filename);
-                                //    FileStream fs = new FileStream(filename, FileMode.Open);
-                                //    byte[] buffer = new byte[fs.Length];
-                                //    fs.Read(buffer, 0, buffer.Length);
-                                //    var guid = Api_UploadVoice(api.GetLoginQq(), BytesToIntptr(buffer));
-                                //    fs.Close();
-                                //    reply(guid);
-                                //}
-                                //else
-                                //    reply("失败");
+                                
                             }
                             catch (Exception e)
                             {
-                                reply(e.Message + "\n" + e.StackTrace);
+                                Reply(e.Message + "\n" + e.StackTrace);
                             }
                             break;
                         }
@@ -282,20 +192,19 @@ namespace UdeBot.MahuaEvents
                         {//下面api.GetGroupMemberInfo工作似乎不太对 管理员和群主返回了normal 普通群成员返回了mannager 所以判断是否为normal
                             if (api.GetGroupMemberInfo(fromGroup, fromQQ).Authority != GroupMemberAuthority.Normal && !IsSuperAdmin(fromQQ))
                             {
-                                reply("权限不足");
+                                Reply("权限不足");
                                 break;
                             }
                             fromQQ = GetQQThroughAt(fromQQ);
                             //判断是否仅是@名字 ([@xxx]这种真正的@才能获取到qq号码）
                             if (fromQQ.Contains("@") && !fromQQ.Contains("["))
                             {
-                                reply("目标有误");
+                                Reply("目标有误");
                                 break;
                             }
-                            int sec;
-                            if (args.Count < 2 || !int.TryParse(args[1], out sec))
+                            if (args.Count < 2 || !int.TryParse(args[1], out int sec))
                             {
-                                reply("时长输入有误");
+                                Reply("时长输入有误");
                                 break;
                             }
                             Api_mute(fromGroup, GetQQThroughAt(args[0]), sec);
@@ -307,7 +216,7 @@ namespace UdeBot.MahuaEvents
                             byte[] buffer = new byte[fs.Length];
                             fs.Read(buffer, 0, buffer.Length);
                             var guid = api_UploadVoice(BytesToIntptr(buffer));
-                            reply(guid);
+                            Reply(guid);
                             fs.Close();
                             break;
                         }
@@ -315,7 +224,7 @@ namespace UdeBot.MahuaEvents
                     case "rollmember":
                         {
                             var list = new List<GroupMemberInfo>(api.GetGroupMemebersWithModel(fromGroup).Model);
-                            reply("抽中了[@" + list[new Random().Next(list.Count)].Qq + ']');
+                            Reply("抽中了[@" + list[new Random().Next(list.Count)].Qq + ']');
                             break;
                         }
                     case "全员禁言":
@@ -332,7 +241,7 @@ namespace UdeBot.MahuaEvents
                             {
                                 api.BanGroupMember(fromGroup, item.Qq, new TimeSpan(0, 0, 10));
                             }
-                            reply("Laying down smoke");
+                            Reply("Laying down smoke");
                             break;
                         }
                     case "addadmin":
@@ -340,7 +249,7 @@ namespace UdeBot.MahuaEvents
                         {
                             if (!IsSuperAdmin(fromQQ))
                             {
-                                reply("你不是超级管理员 无法执行此操作");
+                                Reply("你不是超级管理员 无法执行此操作");
                                 break;
                             }
                             var msg = "已添加\n";
@@ -354,7 +263,7 @@ namespace UdeBot.MahuaEvents
                                 cfg.op.Add(qq);
                                 msg += At(qq) + '\n';
                             }
-                            reply(msg + "为超级管理");
+                            Reply(msg + "为超级管理");
                             break;
                         }
                     case "removeadmin":
@@ -362,7 +271,7 @@ namespace UdeBot.MahuaEvents
                         {
                             if (!IsSuperAdmin(fromQQ))
                             {
-                                reply("你不是超级管理员 无法执行此操作");
+                                Reply("你不是超级管理员 无法执行此操作");
                                 break;
                             }
                             var msg = "已将\n";
@@ -374,26 +283,26 @@ namespace UdeBot.MahuaEvents
                                 cfg.op.RemoveAll(op => op == qq);
                                 msg += At(qq) + '\n';
                             }
-                            reply(msg + "移出超级管理");
+                            Reply(msg + "移出超级管理");
                             break;
                         }
                     default:
                         {
-                            reply("UdeBot 未知指令");
+                            Reply("UdeBot 未知指令");
                             goto case "help";
                         }
                 }
             }
             catch (IndexOutOfRangeException)
             {
-                reply("参数有误");
+                Reply("参数有误");
             }
             catch (Exception e)
             {
                 api.SendPrivateMessage(cfg.logToQQ, e.Message + "\n\n\n" + e.Source);
             }
         }
-        private void reply(string Msg)
+        private void Reply(string Msg)
         {
             api.SendGroupMessage(fromGroup, Msg);
         }

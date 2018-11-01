@@ -7,19 +7,19 @@ namespace UdeBot.Processer
     {
         private static Dictionary<string, Repeat> RepeationList = new Dictionary<string, Repeat>();
 
-        string qqGroup;
+        //string qqGroup;
         Queue<string> PreviousMsg = new Queue<string>();//0为上上一条 1为上条
         bool repeated;
 
-        internal Repeat(string QQGroup)
-        {
-            qqGroup = QQGroup;
-        }
+        //internal Repeat(string QQGroup)
+        //{
+            //qqGroup = QQGroup;
+        //}
 
         internal static void Add(string QQGroup, string Msg)
         {
             if (!RepeationList.ContainsKey(QQGroup))
-                RepeationList.Add(QQGroup, new Repeat(QQGroup));
+                RepeationList.Add(QQGroup, new Repeat(/*QQGroup*/));
             RepeationList[QQGroup].PreviousMsg.Enqueue(Msg);
             if (RepeationList[QQGroup].PreviousMsg.Count == UdeBot.Helper.Common.cfg.reperterTrigger)
             {

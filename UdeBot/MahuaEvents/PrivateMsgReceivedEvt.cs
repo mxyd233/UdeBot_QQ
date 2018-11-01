@@ -39,32 +39,29 @@ namespace UdeBot.MahuaEvents
                 case "验证":
                 case "verify":
                     {
-                        if (!Verify.VerifyDictionary.ContainsKey(fromQQ))
-                        {
-                            reply("你并没有要验证的操作，或者你的验证流程已经超时了呢");
-                            break;
-                        }
-
-                        try
-                        {
-                            if (Verify.VerifyDictionary[fromQQ].VerifyCode(arg))
-                            {
-                                reply("绑定成功~");
-                            }
-                            else
-                            {
-                                reply("验证码错误 请重新输入");
-                            }
-                        }
-                        catch//三次均验证失败后会抛出异常
-                        {
-                            reply("已达错误次数上限，请重新开始进行验证");
-                        }
+                        Ude.VerifyUser(fromQQ, arg, Reply);
+                        break;
+                    }
+                case "bind":
+                case "绑定":
+                    {
+                        Ude.BindUser(fromQQ, arg, Reply);
+                        break;
+                    }
+                case "stats":
+                case "stat":
+                    {
+                        Ude.ReplyStats(arg, Reply);
+                        break;
+                    }
+                case "help":
+                    {
+                        Ude.ReplyHelp(Reply);
                         break;
                     }
             }
         }
-        private void reply(string msg)
+        private void Reply(string msg)
         {
             _mahuaApi.SendPrivateMessage(fromQQ, msg);
         }
