@@ -30,7 +30,6 @@ namespace UdeBot.MahuaEvents
             fromGroup = context.FromGroup;
             fromQQ = context.FromQq;
             msg = context.Message;
-            Processer.Repeat.Add(fromGroup, msg);
             //<发烟>
             if (msg.ToLower().Contains(@"\uf09f9aac"))
             {
@@ -42,7 +41,10 @@ namespace UdeBot.MahuaEvents
             {
                 msg = msg.Trim();//去除首尾空字符
                 if (!(msg.StartsWith("!") || msg.StartsWith("！")))
+                {
+                    Repeat.Add(fromGroup, msg);
                     return;
+                }
                 var cmd = msg.Replace("!", "").Replace("！", "").Trim().ToLower().Split(' ')[0];
                 var arg = msg.Remove(0, cmd.Length + 1).Trim();
                 var argsarr = arg.Split(' ');
@@ -91,7 +93,7 @@ namespace UdeBot.MahuaEvents
                     case "bind":
                     case "绑定":
                         {
-                            if(Verify.VerifyDictionary.ContainsKey(fromQQ))
+                            if (Verify.VerifyDictionary.ContainsKey(fromQQ))
                             {
                                 reply("你仍在一个验证流程中，请将ude绑定邮箱中的验证码通过私聊 !验证 233333 的方式发送给我");
                                 break;
