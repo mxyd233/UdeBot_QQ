@@ -33,8 +33,12 @@ namespace UdeBot.MahuaEvents
             //<发烟>
             if (msg.ToLower().Contains(@"\uf09f9aac"))
             {
-                api.BanGroupMember(fromGroup, fromQQ, new TimeSpan(0, 0, new Random().Next(61)));
-                Reply("{E85F90EE-FC93-44EF-361D-343BD9BCB6BA}.amr");
+                api.BanGroupMember(fromGroup, fromQQ, new TimeSpan(0, 0, 10));
+                api.SendGroupMessage(fromGroup, GetVoiceGuid("大哥抽烟.mp3"));
+                //var guid = Api_UploadVoice(BytesToIntptr(buffer));
+                //Reply(guid);
+                //api_UploadVoice()
+                //Reply("{E85F90EE-FC93-44EF-361D-343BD9BCB6BA}.amr");
             }//</发烟>
 
             try
@@ -178,7 +182,7 @@ namespace UdeBot.MahuaEvents
                         {
                             try
                             {
-                                
+                                Reply(api.GetLoginQq());
                             }
                             catch (Exception e)
                             {
@@ -215,8 +219,8 @@ namespace UdeBot.MahuaEvents
                             FileStream fs = new FileStream(@"F:\silk\xn1.silk", FileMode.Open);
                             byte[] buffer = new byte[fs.Length];
                             fs.Read(buffer, 0, buffer.Length);
-                            var guid = api_UploadVoice(BytesToIntptr(buffer));
-                            Reply(guid);
+                            //var guid = Api_UploadVoice(BytesToIntptr(buffer));
+                            //Reply(guid);
                             fs.Close();
                             break;
                         }

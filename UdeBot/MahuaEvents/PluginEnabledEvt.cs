@@ -21,6 +21,7 @@ namespace UdeBot.MahuaEvents
         public void Enabled(PluginEnabledContext context)
         {
             Conf.Load();
+            Helper.Common.LogonQQ = MahuaApis.Api.api.GetLoginQq();
             // 不要忘记在MahuaModule中注册
         }
     }

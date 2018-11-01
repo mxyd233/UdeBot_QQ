@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using static UdeBot.MahuaApis.Api;
 
@@ -15,11 +16,11 @@ namespace UdeBot.Helper
             groupSingle = 4,
             discussSingle = 5
         }
-        internal static string LogonQQ = "2795637824";
+        internal static string LogonQQ;
         internal static Conf cfg;
         #region naiveApi
         [DllImport("Message.dll")]
-        private static extern string Api_UploadVoice(string usingQQ, IntPtr Data);
+        private static extern string Api_UploadVoice(string usingQQ, byte[] Data);
         [DllImport("Message.dll")]
         private static extern bool Api_IsFriend(string usingQQ, string QQ);
         [DllImport("Message.dll")]
@@ -32,7 +33,26 @@ namespace UdeBot.Helper
         {
             return cfg.op.Contains(QQ);
         }
-        internal static string api_UploadVoice(IntPtr Data)
+        internal static string GetVoiceGuid(string filename)
+        {
+            if (!File.Exists(filename + ".pcm"))
+                ConvertToPcm(ref filename);
+            else
+                filename+=".pcm";
+            if (!File.Exists(filename + ".pcm.silk"))
+                ConvertPcmToSlik(ref filename);
+            else
+                filename += ".silk"; ;
+
+            using (var fs = File.OpenRead(filename))
+            {
+                byte[] b = new byte[fs.Length];
+                fs.Read(b, 0, b.Length);
+                return Api_UploadVoice(b);
+
+            }
+        }
+        private static string Api_UploadVoice(byte[] Data)
         {
             return Api_UploadVoice(LogonQQ, Data);
         }
@@ -44,12 +64,11 @@ namespace UdeBot.Helper
         {
             return Api_SendMsg(LogonQQ, (int)sendType, subType, groupDst, QQDst, Msg);
         }
-        internal static bool Api_mute(string fromGroup, string dstQQ, int sec)
+        internal static void Api_mute(string fromGroup, string dstQQ, int sec)
         {
             api.BanGroupMember(fromGroup, dstQQ, new TimeSpan(0, 0, Convert.ToInt32(sec)));
             api.SendGroupMessage(fromGroup, $"已将[@{dstQQ}]禁言{sec}秒钟");
-            api.SendGroupMessage(fromGroup, "{E85F90EE-FC93-44EF-361D-343BD9BCB6BA}.amr");
-            return true;
+            api.SendGroupMessage(fromGroup, GetVoiceGuid("大哥抽烟.mp3"));
         }
         internal static int Log(string msg)
         {
@@ -63,13 +82,15 @@ namespace UdeBot.Helper
                 return At;
         }
         internal static string At(string QQ) { return $"[@{QQ}]"; }
-        internal static bool ConvertToPcm(ref string filename)
+        private static bool ConvertToPcm(ref string filename)
         {
             using (var process = new Process())
             {
-                var psi = new ProcessStartInfo("ffmpeg.exe", $"-i \"{filename}\" -y -f s16le -ar 24000 -ac 1 -acodec pcm_s16le \"{filename}.pcm\"");
-                psi.CreateNoWindow = true;
-                psi.UseShellExecute = false;
+                var psi = new ProcessStartInfo("ffmpeg.exe", $"-i \"{filename}\" -y -f s16le -ar 24000 -ac 1 -acodec pcm_s16le \"{filename}.pcm\"")
+                {
+                    CreateNoWindow = true,
+                    UseShellExecute = false
+                };
                 process.StartInfo = psi;
                 process.Start();
                 process.WaitForExit();
@@ -82,11 +103,11 @@ namespace UdeBot.Helper
                 return false;
             }
         }
-        internal static bool ConvertPcmToSlik(ref string filename)
+        private static bool ConvertPcmToSlik(ref string filename)
         {
             using (var process = new Process())
             {
-                var psi = new ProcessStartInfo("silk_v3_encoder.exe", $"\"{filename}\" \"{filename}.silk\" -tencent -rate 48000")
+                var psi = new ProcessStartInfo("silk_v3_encoder.exe", $"\"{filename}\" \"{filename}.silk\" -tencent -rate 24000")
                 {
                     CreateNoWindow = true,
                     UseShellExecute = false
@@ -102,16 +123,6 @@ namespace UdeBot.Helper
                 }
                 filename = "";
                 return false;
-            }
-        }
-        internal static IntPtr BytesToIntptr(byte[] bytes)
-        {
-            unsafe
-            {
-                fixed (byte* p = &bytes[0])
-                {
-                    return (IntPtr)p;
-                }
             }
         }
     }
