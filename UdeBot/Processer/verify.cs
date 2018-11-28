@@ -91,34 +91,65 @@ namespace UdeBot.Processer
             verificationCode = code;
         }
 
-        internal bool VerifyCode(string code)
+        internal bool VerifyCode(string inputCode)
         {
-            var success = verificationCode == code;
-            if (success)
+            bool isSuccessful;
+
+            // There are two types of code that inputCode may be, one of which is a random series of chars consisting of both alphabets and numerals, 
+            // which is used for binding a qq account with a ude one; the other type consisting of numberals only is in essence the value of user_id 
+            // of a user, which is used for rescue measures, say, changing his email address. Unlike the latter one, the former one cannot be parsed
+            // as a variable of integral type, so we use this feature to identify which kind of action the user would like to perform. 
+
+            if (int.TryParse(inputCode, out int parsedUserIdInput)) // inputCode is probably user_id for rescue. We may need a larger type than uint if there will be more than 2.1 billion playing ude in the future, which I believe so. 
             {
-                switch (verifyFor)
+                isSuccessful = parsedUserIdInput == userid;
+                if (isSuccessful)
                 {
-                    case VerifyFor.bind:
-                        Database.Exec($"update phpbb_users set QQ='{QQ}' where user_id={userid}");
-                        VerificationDictionary.Remove(QQ);
-                        break;
-                    case VerifyFor.web:
-                        break;
-                    default:
-                        break;
+                    Database.Exec($"update osu_email_verify set qq_verify_result=1 where user_id={userid}");
+                }
+                else
+                {
+                    DealWithInvalidVerification();
                 }
             }
-            else if (++failTimes > 2)
+            else // input is probably generated random code for account binding
             {
-                VerificationDictionary.Remove(QQ);//↓log多次验证失败
-                MahuaApis.Api.api.SendPrivateMessage(cfg.logToQQ, $"{QQ}尝试在 https://osu.zhzi233.cn/u/{userid} 多次验证失败");
-                throw new Exception("三次验证失败");//抛出异常来返回第三个'bool'
+                isSuccessful = verificationCode == inputCode;
+                if (isSuccessful)
+                {
+                    switch (verifyFor)
+                    {
+                        case VerifyFor.bind:
+                            Database.Exec($"update phpbb_users set QQ='{QQ}' where user_id={userid}");
+                            VerificationDictionary.Remove(QQ);
+                            break;
+                        case VerifyFor.web:
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                else
+                {
+                    DealWithInvalidVerification();
+                }
             }
-            else
-            {   //log验证失败
-                MahuaApis.Api.api.SendPrivateMessage(cfg.logToQQ, $"{QQ}尝试在 https://osu.zhzi233.cn/u/{userid} 验证失败");
+
+            void DealWithInvalidVerification()
+            {
+                if (++failTimes > 2)
+                {
+                    VerificationDictionary.Remove(QQ);//↓log多次验证失败
+                    MahuaApis.Api.api.SendPrivateMessage(cfg.logToQQ, $"{QQ}尝试在 https://osu.zhzi233.cn/u/{userid} 多次验证失败");
+                    throw new Exception("三次验证失败");//抛出异常来返回第三个'bool'
+                }
+                else
+                {   //log验证失败
+                    MahuaApis.Api.api.SendPrivateMessage(cfg.logToQQ, $"{QQ}尝试在 https://osu.zhzi233.cn/u/{userid} 验证失败");
+                }
             }
-            return success;
+
+            return isSuccessful;
         }
     }
 }
