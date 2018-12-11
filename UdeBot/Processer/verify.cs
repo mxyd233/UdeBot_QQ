@@ -85,7 +85,7 @@ namespace UdeBot.Processer
             {
                 code += (char)GenerateChar(random.Next(3)); // randomly decide whether to generate a numeral, an upper-case alphabet or a lower-case alphabet
             }
-            if (code.Any(c => (c >= 0x41 && c < 0x5b) || (c >= 0x61 && c < 0x7b))) // if there are any alphabets (i.e. non-numerals) in code
+            if (code.Any(c => c >= 0x41 && c < 0x5b || c >= 0x61 && c < 0x7b)) // if there are any alphabets (i.e. non-numerals) in code
             {
                 code += (char)GenerateChar(random.Next(3));
             }
@@ -101,13 +101,13 @@ namespace UdeBot.Processer
             bool isSuccessful;
 
             // There are two types of code that inputCode may be, one of which is a random series of chars consisting of both alphabets and numerals, 
-            // which is used for binding a qq account with a ude one; the other type consisting of numberals only is in essence the value of user_id 
-            // of a user, which is used for rescue measures, say, changing his email address. Unlike the latter one, the former one cannot be parsed
-            // as a variable of integral type, so we use this feature to identify which kind of action the user would like to perform. 
+            // which is used for binding a qq account with a ude one; the other type consisting of numberals only is in essence the value of verify_id 
+            // of a verification session, which is used for rescue measures, say, changing his email address. Unlike the latter one, the former one
+            // cannot be parsed as a variable of integral type, so we use this feature to identify which kind of action the user would like to perform. 
 
-            if (int.TryParse(inputCode, out int parsedUserIdInput)) // inputCode is probably user_id for rescue. We may need a larger type than uint if there will be more than 2.1 billion playing ude in the future, which I believe so. 
+            if (int.TryParse(inputCode, out int parsedVerifyIdInput)) // inputCode is probably verify_id for rescue. We may need a larger type than int if there will be more than 2.1 billion playing ude in the future, which I believe so. 
             {
-                isSuccessful = parsedUserIdInput == userid;
+                isSuccessful = IsVerifyIdMatching() && IsQqNumberMatching(); // only if the correct USER entered the corrent CODE will the evaluation yields true, thus preventing people other than the one who requests the validation from passing the process even if they have the correct code
                 if (isSuccessful)
                 {
                     Database.Exec($"update osu_email_verify set qq_verify_result=1 where user_id={userid}");
@@ -119,7 +119,7 @@ namespace UdeBot.Processer
             }
             else // input is probably generated random code for account binding. GenCode() method is modified to ensure that the verification code generated includes at least one non-numeral char. 
             {
-                isSuccessful = verificationCode == inputCode;
+                isSuccessful = inputCode == verificationCode;
                 if (isSuccessful)
                 {
                     switch (verifyFor)
@@ -138,6 +138,18 @@ namespace UdeBot.Processer
                 {
                     DealWithInvalidVerification();
                 }
+            }
+
+            bool IsVerifyIdMatching()
+            {
+                int verifyIdFromDatabase = (int)Database.RunQueryOne($"select verify_id from osu_email_verify where user_id={userid}");
+                return parsedVerifyIdInput == verifyIdFromDatabase;
+            }
+
+            bool IsQqNumberMatching()
+            {
+                int qqNumberFromDatabase = (int)Database.RunQueryOne($"select QQ from phpbb_users where user_id={userid}");
+                return int.Parse(QQ) == qqNumberFromDatabase;
             }
 
             void DealWithInvalidVerification()
