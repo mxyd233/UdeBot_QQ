@@ -71,6 +71,13 @@ namespace UdeBot.Processer
                 }
             }
         }
+        internal static void ForgotEmailVerify(string toQQ, string verificationCode, ReplyMethod reply)
+        {
+            if (new Verify(toQQ).VerifyCode(verificationCode))
+                reply("已通过qq找回邮箱");
+            else
+                reply("验证码错误");
+        }
         internal static void ReplyStats(string username,ReplyMethod reply)
         {
             if (string.IsNullOrEmpty(username))

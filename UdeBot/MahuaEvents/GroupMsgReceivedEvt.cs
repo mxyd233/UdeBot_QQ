@@ -71,7 +71,23 @@ namespace UdeBot.MahuaEvents
                     case "验证":
                     case "verify":
                         {
+                            if(string.IsNullOrEmpty(arg))
+                            {
+                                Reply("请输入验证码");
+                                break;
+                            }
                             Ude.VerifyUser(fromQQ, arg, Reply);
+                            break;
+                        }
+                    case "找回邮箱":
+                    case "resetemail":
+                        {
+                            if (string.IsNullOrEmpty(arg))
+                            {
+                                Reply("请输入验证码");
+                                break;
+                            }
+                            Ude.ForgotEmailVerify(fromQQ, arg, Reply);
                             break;
                         }
                     case "help":
@@ -182,7 +198,8 @@ namespace UdeBot.MahuaEvents
                         {
                             try
                             {
-                                Reply(api.GetLoginQq());
+                                api.SendGroupMessage(fromGroup).Image(@"C:\osu!\Songs\846995 Drop - Granat\anime_bg.png").Done();
+                                //Reply(api.GetLoginQq());
                             }
                             catch (Exception e)
                             {
