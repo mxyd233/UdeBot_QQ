@@ -16,6 +16,8 @@ namespace UdeBot.MahuaEvents
         private string fromQQ;
         private string msg;
 
+        private void Reply(string msg) => _mahuaApi.SendPrivateMessage(fromQQ, msg);
+
         public void ProcessPrivateMessage(PrivateMessageReceivedContext context)
         {
             fromQQ = context.FromQq;
@@ -70,10 +72,6 @@ namespace UdeBot.MahuaEvents
                         break;
                     }
             }
-        }
-        private void Reply(string msg)
-        {
-            _mahuaApi.SendPrivateMessage(fromQQ, msg);
         }
     }
 }

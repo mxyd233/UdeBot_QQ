@@ -13,9 +13,9 @@ namespace UdeBot.Processer
     {
         internal enum VerifyFor
         {
-            bind,
-            web,
-            forgotEmail
+            Bind,
+            Web,
+            ForgotEmail
         }
 
         internal static Dictionary<string, Verify> VerificationDictionary = new Dictionary<string, Verify>();
@@ -26,7 +26,7 @@ namespace UdeBot.Processer
         Timer timer;
         private readonly VerifyFor verifyFor;
 
-        internal Verify(int userid, string QQ, VerifyFor verifyFor = VerifyFor.web)
+        internal Verify(int userid, string QQ, VerifyFor verifyFor = VerifyFor.Web)
         {
             this.QQ = QQ;
             this.userid = userid;
@@ -73,11 +73,12 @@ namespace UdeBot.Processer
             timer.Elapsed += Timedout;
             timer.Start();
         }
+
         internal Verify(string QQ)
         {
             this.QQ = QQ;
             this.userid= Convert.ToInt32(Database.RunQueryOne($"(select user_id from phpbb_users where QQ={QQ})"));
-            this.verifyFor = VerifyFor.forgotEmail;
+            this.verifyFor = VerifyFor.ForgotEmail;
         }
 
         private void Timedout(object sender, ElapsedEventArgs e)
@@ -102,7 +103,7 @@ namespace UdeBot.Processer
         {
             switch (verifyFor)
             {
-                case VerifyFor.bind:
+                case VerifyFor.Bind:
                     {
                         if (inputCode == verificationCode)
                         {
@@ -116,11 +117,11 @@ namespace UdeBot.Processer
                             return false;
                         }
                     }
-                case VerifyFor.web:
-                    {
-                        break;
-                    }
-                case VerifyFor.forgotEmail:
+
+                case VerifyFor.Web:
+                    break;
+
+                case VerifyFor.ForgotEmail:
                     {
                         bool IsVerifyIdMatching()
                         {
