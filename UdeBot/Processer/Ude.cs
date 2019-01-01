@@ -27,7 +27,7 @@ namespace UdeBot.Processer
                 reply("你已经绑定过惹");
                 return;
             }
-            using (var r = Database.RunQuery($"SELECT user_id,(QQ is null) as havQQ FROM phpbb_users WHERE username='{username}'"))//如果没有获得userid将会返回0
+            using (var r = Database.RunQuery($"SELECT user_id,(QQ is null) as havQQ FROM phpbb_users WHERE username='{username}'")) // 如果没有获得userid将会返回0
             {
                 if (r.Read())
                 {
@@ -38,39 +38,48 @@ namespace UdeBot.Processer
                         reply("此id已经绑定过QQ了");
                         return;
                     }
-                    Verify.VerificationDictionary.Add(toQQ, new Verify(userid, toQQ, Verify.VerifyFor.bind));
+                    Verify.VerificationDictionary.Add(toQQ, new Verify(userid, toQQ, Verify.VerifyFor.Bind));
                     reply("请将ude绑定邮箱中的验证码通过私聊 !验证 233333 的方式发送给我");
                     return;
                 }
             }
             reply("未ude找到此游戏id，请检查输入\n还没有注册的话\n可以在 https://osu.zhzi233.cn/p/register 注册\n(ude同样禁止小号)");
         }
+
         internal static void VerifyUser(string toQQ,string verificationCode, ReplyMethod reply)
         {
+            if (!Verify.VerificationDictionary.ContainsKey(toQQ))
             {
-                if (!Verify.VerificationDictionary.ContainsKey(toQQ))
-                {
-                    reply("你并没有要验证的操作，或者你的验证流程已经超时了呢");
-                    return;
-                }
+                reply("你并没有要验证的操作，或者你的验证流程已经超时了呢");
+                return;
+            }
 
-                try
+            try
+            {
+                if (Verify.VerificationDictionary[toQQ].VerifyCode(verificationCode))
                 {
-                    if (Verify.VerificationDictionary[toQQ].VerifyCode(verificationCode))
-                    {
-                        reply("绑定成功~");
-                    }
-                    else
-                    {
-                        reply("验证码错误 请重新输入");
-                    }
+                    reply("绑定成功~");
                 }
-                catch//三次均验证失败后会抛出异常
+                else
                 {
-                    reply("已达错误次数上限，请重新开始进行验证");
+                    reply("验证码错误 请重新输入");
                 }
             }
+            catch // 三次均验证失败后会抛出异常
+            {
+                reply("已达错误次数上限，请重新开始进行验证");
+            }
+
         }
+
+        internal static void ForgotEmailVerify(string toQQ, string verificationCode, ReplyMethod reply)
+        {
+            if (new Verify(toQQ).VerifyCode(verificationCode))
+                reply("已通过qq找回邮箱");
+            else
+                reply("验证码错误");
+        }
+
         internal static void ReplyStats(string username,ReplyMethod reply)
         {
             if (string.IsNullOrEmpty(username))
@@ -78,6 +87,7 @@ namespace UdeBot.Processer
                 reply("请输入用户名");
                 return;
             }
+
             try
             {
                 var userid = Convert.ToInt32(Database.RunQueryOne($"SELECT user_id from phpbb_users where username='{username}'"));//如果没有获得userid将会返回0
@@ -99,6 +109,7 @@ namespace UdeBot.Processer
                         return;
                     }
                 }
+
                 reply("用户名不存在");
                 return;
             }
@@ -108,6 +119,7 @@ namespace UdeBot.Processer
                 throw;//在这里throw后会被switch块外的catch捕获并发送给cfg.lotToQQ
             }
         }
+
         internal static void ReplyHelp(ReplyMethod reply) => reply(
                                 "------------------Help-------------------\n" +
                                 $"当前机器人版本: v.{new PluginInfo().Version}\n" +

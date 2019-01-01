@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Mail;
 using System.Timers;
@@ -12,19 +13,20 @@ namespace UdeBot.Processer
     {
         internal enum VerifyFor
         {
-            bind,
-            web
+            Bind,
+            Web,
+            ForgotEmail
         }
+
         internal static Dictionary<string, Verify> VerificationDictionary = new Dictionary<string, Verify>();
         readonly string QQ;
         readonly int userid;
         string verificationCode;
         int failTimes;
         Timer timer;
-
-
         private readonly VerifyFor verifyFor;
-        internal Verify(int userid, string QQ, VerifyFor verifyFor = VerifyFor.web)
+
+        internal Verify(int userid, string QQ, VerifyFor verifyFor = VerifyFor.Web)
         {
             this.QQ = QQ;
             this.userid = userid;
@@ -40,7 +42,9 @@ namespace UdeBot.Processer
                     userMail = r.GetString("user_email");
                 }
                 else
+                {
                     throw new Exception("无法找到此用户");
+                }
             }
 
             var mailTo = new MailAddress(userMail);
@@ -60,14 +64,21 @@ namespace UdeBot.Processer
                 {
                     EnableSsl = cfg.stmpSsl,
                     Credentials = new NetworkCredential(cfg.mailFrom, cfg.mailPasswd)
-                }
-                )
-
-                    stmpSev.Send(mail);
+                })
+                
+                stmpSev.Send(mail);
             }
+
             timer = new Timer() { AutoReset = false, Interval = 1000 * 60 * 60 * 30, Enabled = false };
             timer.Elapsed += Timedout;
             timer.Start();
+        }
+
+        internal Verify(string QQ)
+        {
+            this.QQ = QQ;
+            this.userid= Convert.ToInt32(Database.RunQueryOne($"(select user_id from phpbb_users where QQ={QQ})"));
+            this.verifyFor = VerifyFor.ForgotEmail;
         }
 
         private void Timedout(object sender, ElapsedEventArgs e)
@@ -78,47 +89,77 @@ namespace UdeBot.Processer
         private void GenCode()
         {
             Random random = new Random();
-            int Determiner(int n) => n == 0 ? random.Next(0x30, 0x3a) : (n == 1 ? random.Next(0x41, 0x5b) : random.Next(0x61, 0x7b));
-            //Console.Write();
-            //Random random = new Random();
+            int GenerateChar(int n) => n == 0 ? random.Next(0x30, 0x3a) : (n == 1 ? random.Next(0x41, 0x5b) : random.Next(0x61, 0x7b)); // parameter n corresponds to type of type of chars: 0 being numerals, 1 being upper-case alphabets, and 2 being lower-case alphabets
             var code = "";
             for (int i = 0; i < 9; i++)
             {
-                //int determiner(int n) => 
-                code += (char)Determiner(random.Next(3));
+                code += (char)GenerateChar(random.Next(3)); // randomly decide whether to generate a numeral, an upper-case alphabet or a lower-case alphabet
             }
 
             verificationCode = code;
         }
 
-        internal bool VerifyCode(string code)
+        internal bool VerifyCode(string inputCode)
         {
-            var success = verificationCode == code;
-            if (success)
+            switch (verifyFor)
             {
-                switch (verifyFor)
+                case VerifyFor.Bind:
+                    {
+                        if (inputCode == verificationCode)
+                        {
+                            Database.Exec($"update phpbb_users set QQ='{QQ}' where user_id={userid}");
+                            VerificationDictionary.Remove(QQ);
+                            return true;
+                        }
+                        else
+                        {
+                            DealWithInvalidVerification();
+                            return false;
+                        }
+                    }
+
+                case VerifyFor.Web:
+                    break;
+
+                case VerifyFor.ForgotEmail:
+                    {
+                        bool IsVerifyIdMatching()
+                        {
+                            int verifyIdFromDatabase = Convert.ToInt32(Database.RunQueryOne($"select verify_id from osu_email_verify where user_id={userid}"));
+                            //(int)Database.RunQueryOne($"select verify_id from osu_email_verify where user_id=(select user_id from phpbb_users where QQ={QQ})");
+                            if (int.TryParse(inputCode, out int parsedInt))
+                                return parsedInt == verifyIdFromDatabase;
+                            else
+                                return false;
+                        }
+
+                        var isSuccessful = IsVerifyIdMatching();
+                        if (isSuccessful)
+                        {
+                            Database.Exec($"update osu_email_verify set qq_verify_result=1 where user_id={userid}");
+                        }
+                        else
+                        {
+                            DealWithInvalidVerification();
+                        }
+                        return isSuccessful;
+                    }
+            }
+
+            void DealWithInvalidVerification()
+            {
+                if (++failTimes > 2)
                 {
-                    case VerifyFor.bind:
-                        Database.Exec($"update phpbb_users set QQ='{QQ}' where user_id={userid}");
-                        VerificationDictionary.Remove(QQ);
-                        break;
-                    case VerifyFor.web:
-                        break;
-                    default:
-                        break;
+                    VerificationDictionary.Remove(QQ);//↓log多次验证失败
+                    MahuaApis.Api.api.SendPrivateMessage(cfg.logToQQ, $"{QQ}尝试在 https://osu.zhzi233.cn/u/{userid} 多次验证失败({verifyFor})");
+                    throw new Exception("三次验证失败");//抛出异常来返回第三个'bool'
+                }
+                else
+                {   //log验证失败
+                    MahuaApis.Api.api.SendPrivateMessage(cfg.logToQQ, $"{QQ}尝试在 https://osu.zhzi233.cn/u/{userid} 验证失败({verifyFor})");
                 }
             }
-            else if (++failTimes > 2)
-            {
-                VerificationDictionary.Remove(QQ);//↓log多次验证失败
-                MahuaApis.Api.api.SendPrivateMessage(cfg.logToQQ, $"{QQ}尝试在 https://osu.zhzi233.cn/u/{userid} 多次验证失败");
-                throw new Exception("三次验证失败");//抛出异常来返回第三个'bool'
-            }
-            else
-            {   //log验证失败
-                MahuaApis.Api.api.SendPrivateMessage(cfg.logToQQ, $"{QQ}尝试在 https://osu.zhzi233.cn/u/{userid} 验证失败");
-            }
-            return success;
+            return false;
         }
     }
 }
