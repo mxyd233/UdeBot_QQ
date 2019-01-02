@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UdeBot.Helper;
 
 namespace UdeBot.Processer
@@ -10,45 +6,57 @@ namespace UdeBot.Processer
     class Ude
     {
         internal delegate void ReplyMethod(string msg);
-        internal static void BindUser(string toQQ,string username, ReplyMethod reply)
+        internal static void BindUser(string toQQ, string username, ReplyMethod reply)
         {
-            if (string.IsNullOrEmpty(username))
-            {
-                reply("请输入大佬在ude中的游戏id");
-                return;
-            }
-            if (Verify.VerificationDictionary.ContainsKey(toQQ))
+            if (Verify.Bind.VerificationDictionary.ContainsKey(toQQ))
             {
                 reply("你仍在一个验证流程中，请将ude绑定邮箱中的验证码通过私聊 !验证 233333 的方式发送给我");
                 return;
             }
-            if (Convert.ToBoolean(Database.RunQueryOne($"SELECT user_id is not null FROM phpbb_users WHERE QQ ='{toQQ}'")))
+            if (string.IsNullOrEmpty(username))
             {
-                reply("你已经绑定过惹");
+                reply("请输入大佬在ude中的用户名");
                 return;
             }
-            using (var r = Database.RunQuery($"SELECT user_id,(QQ is null) as havQQ FROM phpbb_users WHERE username='{username}'")) // 如果没有获得userid将会返回0
-            {
-                if (r.Read())
+            try
+            {//下面如果无法通过username实例化一个user的话(在数据库找不到此username) 就会抛出异常
+                var user = new User(username);
+                if (user.haveQQ)
                 {
-                    var userid = r.GetInt32("user_id");
-                    var Binded = !r.GetBoolean("havQQ");
-                    if (Binded)
-                    {
-                        reply("此id已经绑定过QQ了");
-                        return;
-                    }
-                    Verify.VerificationDictionary.Add(toQQ, new Verify(userid, toQQ, Verify.VerifyFor.Bind));
-                    reply("请将ude绑定邮箱中的验证码通过私聊 !验证 233333 的方式发送给我");
+                    reply("此id已经绑定过QQ了");
                     return;
                 }
+                try
+                {//下面如果无法通过QQ实例化一个user的话(在数据库找不到此QQ) 就会抛出异常
+                    var userQ = new User(true, toQQ);
+                    if (userQ.username != username)
+                    {
+                        reply($"你已经绑定过{userQ}了");
+                        return;
+                    }
+                }
+                catch
+                {
+                    reply("正在发送邮件。。");
+                    user.BindQQ(toQQ);
+                    reply("请将ude绑定邮箱中的验证码通过私聊 (!验证 7an2hengMa) 的方式发送给我");
+                }
+
             }
-            reply("未ude找到此游戏id，请检查输入\n还没有注册的话\n可以在 https://osu.zhzi233.cn/p/register 注册\n(ude同样禁止小号)");
+            catch
+            {
+                reply("未ude找到此游戏id，请检查输入\n还没有注册的话\n可以在 https://osu.zhzi233.cn/p/register 注册\n(ude同样禁止小号)");
+            }
         }
 
-        internal static void VerifyUser(string toQQ,string verificationCode, ReplyMethod reply)
+        internal static void VerifyUser(string toQQ, string verificationCode, ReplyMethod reply)
         {
-            if (!Verify.VerificationDictionary.ContainsKey(toQQ))
+            if (string.IsNullOrEmpty(verificationCode))
+            {
+                reply("请输入验证码");
+                return;
+            }
+            if (!Verify.Bind.VerificationDictionary.ContainsKey(toQQ))
             {
                 reply("你并没有要验证的操作，或者你的验证流程已经超时了呢");
                 return;
@@ -56,7 +64,7 @@ namespace UdeBot.Processer
 
             try
             {
-                if (Verify.VerificationDictionary[toQQ].VerifyCode(verificationCode))
+                if (Verify.Bind.VerificationDictionary[toQQ].Verify(verificationCode))
                 {
                     reply("绑定成功~");
                 }
@@ -74,13 +82,18 @@ namespace UdeBot.Processer
 
         internal static void ForgotEmailVerify(string toQQ, string verificationCode, ReplyMethod reply)
         {
-            if (new Verify(toQQ).VerifyCode(verificationCode))
+            if (string.IsNullOrEmpty(verificationCode))
+            {
+                reply("请输入验证码");
+                return;
+            }
+            if (new Verify1(toQQ).VerifyCode(verificationCode))
                 reply("已通过qq找回邮箱");
             else
                 reply("验证码错误");
         }
 
-        internal static void ReplyStats(string username,ReplyMethod reply)
+        internal static void ReplyStats(string username, ReplyMethod reply)
         {
             if (string.IsNullOrEmpty(username))
             {

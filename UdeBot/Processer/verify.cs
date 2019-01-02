@@ -9,7 +9,7 @@ using static UdeBot.Helper.Common;
 
 namespace UdeBot.Processer
 {
-    class Verify
+    class Verify1
     {
         internal enum VerifyFor
         {
@@ -18,20 +18,20 @@ namespace UdeBot.Processer
             ForgotEmail
         }
 
-        internal static Dictionary<string, Verify> VerificationDictionary = new Dictionary<string, Verify>();
+        internal static Dictionary<string, Verify1> VerificationDictionary = new Dictionary<string, Verify1>();
         readonly string QQ;
         readonly int userid;
-        string verificationCode;
+        readonly string verificationCode;
         int failTimes;
         Timer timer;
         private readonly VerifyFor verifyFor;
 
-        internal Verify(int userid, string QQ, VerifyFor verifyFor = VerifyFor.Web)
+        internal Verify1(int userid, string QQ, VerifyFor verifyFor = VerifyFor.Web)
         {
             this.QQ = QQ;
             this.userid = userid;
             this.verifyFor = verifyFor;
-            GenCode();
+            //GenCode();
             var username = "";
             var userMail = "";
             using (var r = Database.RunQuery($"select user_email,username from phpbb_users where user_id='{this.userid}'"))
@@ -50,31 +50,13 @@ namespace UdeBot.Processer
             var mailTo = new MailAddress(userMail);
             var mailFrom = new MailAddress(cfg.mailFrom, new PluginInfo().Name);
 
-            using (var mail = new MailMessage(mailFrom, mailTo))
-            {
-                mail.Subject = "osu!ude账户验证";
-                mail.Body =
-                $"嗨~ {username}!\n" +
-                "有人正在请求你的验证码\n" +
-                $"你的验证码是：{verificationCode}\n" +
-                "如果你没有进行需要验证码的操作 请注意一下账户安全\n" +
-                "osu! | http://osu.zhzi233.cn";
-
-                using (SmtpClient stmpSev = new SmtpClient(cfg.smtpHost)
-                {
-                    EnableSsl = cfg.stmpSsl,
-                    Credentials = new NetworkCredential(cfg.mailFrom, cfg.mailPasswd)
-                })
-                
-                stmpSev.Send(mail);
-            }
 
             timer = new Timer() { AutoReset = false, Interval = 1000 * 60 * 60 * 30, Enabled = false };
             timer.Elapsed += Timedout;
             timer.Start();
         }
 
-        internal Verify(string QQ)
+        internal Verify1(string QQ)
         {
             this.QQ = QQ;
             this.userid= Convert.ToInt32(Database.RunQueryOne($"(select user_id from phpbb_users where QQ={QQ})"));
@@ -86,18 +68,7 @@ namespace UdeBot.Processer
             VerificationDictionary.Remove(QQ);
         }
 
-        private void GenCode()
-        {
-            Random random = new Random();
-            int GenerateChar(int n) => n == 0 ? random.Next(0x30, 0x3a) : (n == 1 ? random.Next(0x41, 0x5b) : random.Next(0x61, 0x7b)); // parameter n corresponds to type of type of chars: 0 being numerals, 1 being upper-case alphabets, and 2 being lower-case alphabets
-            var code = "";
-            for (int i = 0; i < 9; i++)
-            {
-                code += (char)GenerateChar(random.Next(3)); // randomly decide whether to generate a numeral, an upper-case alphabet or a lower-case alphabet
-            }
 
-            verificationCode = code;
-        }
 
         internal bool VerifyCode(string inputCode)
         {

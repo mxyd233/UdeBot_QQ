@@ -115,7 +115,10 @@
     <Compile Include="PluginInfo.cs" />
     <Compile Include="Processer\Repeat.cs" />
     <Compile Include="Processer\Ude.cs" />
+    <Compile Include="Processer\User.cs" />
     <Compile Include="Processer\Verify.cs" />
+    <Compile Include="Processer\Verify\Base.cs" />
+    <Compile Include="Processer\Verify\Bind.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
