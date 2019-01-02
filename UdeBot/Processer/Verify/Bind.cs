@@ -11,7 +11,6 @@ namespace UdeBot.Processer.Verify
         internal static Dictionary<string, Bind> VerificationDictionary = new Dictionary<string, Bind>();
 
         Timer timer;
-        private int failTimes;
 
         internal Bind(User User, string QQ)
         {
@@ -35,13 +34,12 @@ namespace UdeBot.Processer.Verify
         {
             VerificationDictionary.Remove(user.QQ);
         }
-
-        internal bool Verify(string inputCode)
+        internal override bool Verify(string inputCode)
         {
             if (inputCode == verificationCode)
             {
-                Database.Exec($"update phpbb_users set QQ='{user.QQ}' where user_id='{user.user_id}'");
                 VerificationDictionary.Remove(user.QQ);
+                Database.Exec($"update phpbb_users set QQ='{user.QQ}' where user_id='{user.user_id}'");
                 return true;
             }
             else
@@ -51,17 +49,13 @@ namespace UdeBot.Processer.Verify
             }
         }
 
-        private void DealWithInvalidVerification()
+        protected override void DealWithInvalidVerification()
         {
+            base.DealWithInvalidVerification();
             if (++failTimes > 2)
             {
-                VerificationDictionary.Remove(user.QQ);//↓log多次验证失败
-                MahuaApis.Api.api.SendPrivateMessage(cfg.logToQQ, $"{user.QQ}尝试在 https://osu.zhzi233.cn/u/{user.user_id} 多次绑定验证失败");
-                throw new Exception("三次验证失败");//抛出异常来返回第三个'bool'
-            }
-            else
-            {   //log验证失败
-                MahuaApis.Api.api.SendPrivateMessage(cfg.logToQQ, $"{user.QQ}尝试在 https://osu.zhzi233.cn/u/{user.user_id} 绑定验证失败");
+                VerificationDictionary.Remove(user.QQ);
+
             }
         }
 
@@ -82,5 +76,6 @@ namespace UdeBot.Processer.Verify
 
             return code;
         }
+
     }
 }

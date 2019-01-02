@@ -6,15 +6,15 @@ using static UdeBot.Helper.Common;
 
 namespace UdeBot.Processer
 {
-    public class User
+    class User
     {
-        public int user_id;
-        public string username;
-        public string user_email;
-        public string QQ;
-        public bool haveQQ;
+        internal int user_id;
+        internal string username;
+        internal string user_email;
+        internal string QQ;
+        internal bool haveQQ;
         #region init
-        public User(int User_id)
+        internal User(int User_id)
         {
             using (var r = Database.RunQuery($"SELECT username,user_email,IFNULL(QQ,'') as QQ FROM phpbb_users WHERE user_id ='{User_id}'"))
             {
@@ -27,7 +27,7 @@ namespace UdeBot.Processer
                 haveQQ = !string.IsNullOrEmpty(QQ);
             }
         }
-        public User(string Username)
+        internal User(string Username)
         {
             using (var r = Database.RunQuery($"SELECT user_id,user_email,IFNULL(QQ,'') as QQ FROM phpbb_users WHERE username ='{Username}'"))
             {
@@ -40,7 +40,7 @@ namespace UdeBot.Processer
                 haveQQ = !string.IsNullOrEmpty(QQ);
             }
         }
-        public User(bool ByQQ,string QQ)
+        internal User(bool ByQQ,string QQ)
         {
             if (!ByQQ)
                 throw new Exception("not ByQQ with a QQ value");
@@ -56,7 +56,7 @@ namespace UdeBot.Processer
             }
         }
         #endregion
-        public void SendEmail(string Title,string Msg)
+        internal void SendEmail(string Title,string Msg)
         {
             var mailTo = new MailAddress(user_email);
             var mailFrom = new MailAddress(cfg.mailFrom, new PluginInfo().Name);
@@ -74,7 +74,7 @@ namespace UdeBot.Processer
                     stmpSev.Send(mail);
             }
         }
-        public void SendQQ(string Msg)
+        internal void SendQQ(string Msg)
         {
             if (!haveQQ)
                 return;

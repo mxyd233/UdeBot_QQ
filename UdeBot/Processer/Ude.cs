@@ -87,7 +87,7 @@ namespace UdeBot.Processer
                 reply("请输入验证码");
                 return;
             }
-            if (new Verify1(toQQ).VerifyCode(verificationCode))
+            if (new Verify.EmailReset(toQQ).Verify(verificationCode))
                 reply("已通过qq找回邮箱");
             else
                 reply("验证码错误");
