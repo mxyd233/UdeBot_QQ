@@ -82,11 +82,6 @@ namespace UdeBot.MahuaEvents
                     case "找回邮箱":
                     case "resetemail":
                         {
-                            if (string.IsNullOrEmpty(arg))
-                            {
-                                Reply("请输入验证码");
-                                break;
-                            }
                             Ude.ForgotEmailVerify(fromQQ, arg, Reply);
                             break;
                         }
